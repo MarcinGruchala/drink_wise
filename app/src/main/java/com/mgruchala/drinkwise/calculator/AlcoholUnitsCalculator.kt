@@ -33,7 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mgruchala.drinkwise.ui.theme.DrinkWiseTheme
+import com.mgruchala.drinkwise.theme.DrinkWiseTheme
 
 @Composable
 fun AlcoholCalculatorView(
