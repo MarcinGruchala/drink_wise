@@ -37,10 +37,12 @@ import com.mgruchala.drinkwise.theme.DrinkWiseTheme
 
 @Composable
 fun AlcoholCalculatorView(
-    viewModel: AlcoholUnitsCalculatorViewModel = viewModel()
+    viewModel: AlcoholUnitsCalculatorViewModel = viewModel(),
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsState()
     AlcoholCalculatorContent(
+        modifier = modifier,
         state = state,
         onQuantityChanged = viewModel::onQuantityChanged,
         onPercentageChanged = viewModel::onPercentageChanged,
@@ -51,6 +53,7 @@ fun AlcoholCalculatorView(
 
 @Composable
 fun AlcoholCalculatorContent(
+    modifier: Modifier = Modifier,
     state: AlcoholCalculatorState,
     onQuantityChanged: (Int) -> Unit = {},
     onPercentageChanged: (Float) -> Unit = {},
@@ -58,15 +61,15 @@ fun AlcoholCalculatorContent(
     onAmountIncrement: () -> Unit = {}
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = modifier,
+        verticalArrangement = Arrangement.Top,
     ) {
-        DrinkTypeSection(
-            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp)
-        )
-        HorizontalDivider()
+//        DrinkTypeSection(
+//            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp)
+//        )
+//        HorizontalDivider()
         DrinkParametersSection(
-            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
+            modifier = Modifier.padding(vertical = 24.dp, horizontal = 16.dp),
             quantityValue = state.drinkQuantityMl,
             alcoholContentValue = state.alcoholPercentage,
             onQuantityChanged = onQuantityChanged,
@@ -74,7 +77,7 @@ fun AlcoholCalculatorContent(
         )
         HorizontalDivider()
         DrinksAmountSection(
-            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
+            modifier = Modifier.padding(vertical = 24.dp, horizontal = 16.dp),
             amount = state.amountOfDrinks,
             onDecrement = onAmountDecrement,
             onIncrement = onAmountIncrement
@@ -114,6 +117,8 @@ fun DrinkParametersSection(
     onQuantityChanged: (Int) -> Unit = {},
     onPercentageChanged: (Float) -> Unit = {}
 ) {
+    val inputWidth = 106.dp
+    val inputHeight = 55.dp
     Column(
         modifier = modifier
     ) {
@@ -123,8 +128,11 @@ fun DrinkParametersSection(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             AlcoholCalculatorSectionText("Quantity (ml)")
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
+                modifier = Modifier
+                    .size(width = inputWidth, height = inputHeight)
+                    .padding(0.dp),
                 value = quantityValue?.toString() ?: "",
                 onValueChange = {
                     val newValue = it.toIntOrNull()
@@ -132,20 +140,20 @@ fun DrinkParametersSection(
                         onQuantityChanged(newValue)
                     }
                 },
-                modifier = Modifier.size(width = 120.dp, height = 50.dp),
+                textStyle = MaterialTheme.typography.bodySmall,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         HorizontalDivider()
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             AlcoholCalculatorSectionText("Alcohol content (%)")
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = alcoholContentValue?.toString() ?: "",
                 onValueChange = {
@@ -155,7 +163,7 @@ fun DrinkParametersSection(
                         onPercentageChanged(newValue)
                     }
                 },
-                modifier = Modifier.size(width = 120.dp, height = 50.dp),
+                modifier = Modifier.size(width = inputWidth, height = inputHeight),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
         }
@@ -198,7 +206,7 @@ fun AlcoholUnitSection(
     alcoholUnits: Float?
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         if (alcoholUnits != null) {
@@ -222,7 +230,7 @@ fun AlcoholCalculatorSectionText(
 ) {
     Text(
         text,
-        style = MaterialTheme.typography.titleLarge
+        style = MaterialTheme.typography.titleMedium
     )
 }
 
