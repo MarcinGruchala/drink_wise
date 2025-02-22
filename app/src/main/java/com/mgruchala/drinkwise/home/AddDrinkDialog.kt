@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -40,14 +41,18 @@ fun AddDrinkDialog(
                 .background(MaterialTheme.colorScheme.surface)
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .wrapContentSize(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 AlcoholCalculatorContent(
                     state = state,
                     modifier = Modifier
-                        .wrapContentSize()
-                        .weight(1f)
+                        .wrapContentSize(),
+                    onPercentageChanged = alcoholUnitsCalculatorViewModel::onPercentageChanged,
+                    onAmountDecrement = alcoholUnitsCalculatorViewModel::onDecrement,
+                    onAmountIncrement = alcoholUnitsCalculatorViewModel::onIncrement,
+                    onQuantityChanged = alcoholUnitsCalculatorViewModel::onQuantityChanged
                 )
                 Row(
                     modifier = Modifier
