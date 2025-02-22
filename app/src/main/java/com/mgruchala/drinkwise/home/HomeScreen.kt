@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -47,7 +49,10 @@ fun HomeScreenContent(
 ) {
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = {}) {
+            FloatingActionButton(
+                onClick = {},
+                containerColor = MaterialTheme.colorScheme.primary,
+                ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
             }
         },
@@ -82,7 +87,12 @@ fun DrinksSummaryCard(
     alcoholUnitLevel: AlcoholUnitLevel
 ) {
     Card(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Row(
             modifier = Modifier
@@ -123,6 +133,7 @@ fun DrinkSummaryCardCircularProgressIndicator(
         progress = { alcoholUnitLevel.unitCount / alcoholUnitLevel.limit },
         modifier = Modifier.size(54.dp),
         color = color,
+        trackColor = MaterialTheme.colorScheme.inverseSurface,
         strokeWidth = 5.dp,
     )
 }
