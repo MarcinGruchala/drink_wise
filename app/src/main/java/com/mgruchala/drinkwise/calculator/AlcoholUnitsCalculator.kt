@@ -1,18 +1,15 @@
 package com.mgruchala.drinkwise.calculator
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -50,7 +47,8 @@ fun AlcoholCalculatorView(
         onQuantityChanged = viewModel::onQuantityChanged,
         onPercentageChanged = viewModel::onPercentageChanged,
         onAmountDecrement = viewModel::onDecrement,
-        onAmountIncrement = viewModel::onIncrement
+        onAmountIncrement = viewModel::onIncrement,
+        isInDialog = false
     )
 }
 
@@ -61,7 +59,8 @@ fun AlcoholCalculatorContent(
     onQuantityChanged: (Int) -> Unit = {},
     onPercentageChanged: (Float) -> Unit = {},
     onAmountDecrement: () -> Unit = {},
-    onAmountIncrement: () -> Unit = {}
+    onAmountIncrement: () -> Unit = {},
+    isInDialog: Boolean = true
 ) {
     Column(
         modifier = modifier,
@@ -87,7 +86,8 @@ fun AlcoholCalculatorContent(
         )
         HorizontalDivider()
         AlcoholUnitSection(
-            alcoholUnits = state.calculatedUnits
+            alcoholUnits = state.calculatedUnits,
+            modifier = if (!isInDialog) Modifier.weight(1f) else Modifier
         )
     }
 }
