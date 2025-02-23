@@ -48,7 +48,7 @@ fun AddDrinkDialog(
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
+                    .padding(8.dp)
             ) {
                 AlcoholCalculatorContent(
                     state = state,
