@@ -1,6 +1,12 @@
 package com.mgruchala.drinkwise.theme
 
 import androidx.compose.ui.graphics.Color
+import com.mgruchala.drinkwise.home.AlcoholUnitLevel
+
+
+val AlcoholUnitLevelLow = Color(0xFF4CAF50)
+val AlcoholUnitLevelAlarming = Color(0xFFFFB74D)
+val AlcoholUnitLevelHigh = Color(0xFFE57373)
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)

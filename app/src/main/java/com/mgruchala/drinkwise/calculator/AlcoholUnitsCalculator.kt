@@ -1,13 +1,11 @@
 package com.mgruchala.drinkwise.calculator
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,45 +26,52 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mgruchala.drinkwise.theme.DrinkWiseTheme
 
 @Composable
 fun AlcoholCalculatorView(
-    viewModel: AlcoholUnitsCalculatorViewModel = viewModel()
+    viewModel: AlcoholUnitsCalculatorViewModel = viewModel(),
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsState()
     AlcoholCalculatorContent(
+        modifier = modifier,
         state = state,
         onQuantityChanged = viewModel::onQuantityChanged,
         onPercentageChanged = viewModel::onPercentageChanged,
         onAmountDecrement = viewModel::onDecrement,
-        onAmountIncrement = viewModel::onIncrement
+        onAmountIncrement = viewModel::onIncrement,
+        isInDialog = false
     )
 }
 
 @Composable
 fun AlcoholCalculatorContent(
+    modifier: Modifier = Modifier,
     state: AlcoholCalculatorState,
     onQuantityChanged: (Int) -> Unit = {},
     onPercentageChanged: (Float) -> Unit = {},
     onAmountDecrement: () -> Unit = {},
-    onAmountIncrement: () -> Unit = {}
+    onAmountIncrement: () -> Unit = {},
+    isInDialog: Boolean = true
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = modifier,
+        verticalArrangement = Arrangement.Top,
     ) {
-        DrinkTypeSection(
-            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp)
-        )
-        HorizontalDivider()
+//        DrinkTypeSection(
+//            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp)
+//        )
+//        HorizontalDivider()
         DrinkParametersSection(
-            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
+            modifier = Modifier.padding(vertical = 24.dp, horizontal = 16.dp),
             quantityValue = state.drinkQuantityMl,
             alcoholContentValue = state.alcoholPercentage,
             onQuantityChanged = onQuantityChanged,
@@ -74,15 +79,15 @@ fun AlcoholCalculatorContent(
         )
         HorizontalDivider()
         DrinksAmountSection(
-            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
+            modifier = Modifier.padding(vertical = 24.dp, horizontal = 16.dp),
             amount = state.amountOfDrinks,
             onDecrement = onAmountDecrement,
             onIncrement = onAmountIncrement
         )
         HorizontalDivider()
         AlcoholUnitSection(
-            modifier = Modifier.weight(1f),
-            alcoholUnits = state.calculatedUnits
+            alcoholUnits = state.calculatedUnits,
+            modifier = if (!isInDialog) Modifier.weight(1f) else Modifier
         )
     }
 }
@@ -123,43 +128,63 @@ fun DrinkParametersSection(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             AlcoholCalculatorSectionText("Quantity (ml)")
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
+            Spacer(modifier = Modifier.height(8.dp))
+            AlcoholCalculatorTextField(
                 value = quantityValue?.toString() ?: "",
-                onValueChange = {
-                    val newValue = it.toIntOrNull()
-                    if (newValue != null) {
-                        onQuantityChanged(newValue)
+                onValueChange = { newValue ->
+                    val newQuantityValue = newValue.toIntOrNull()
+                    if (newQuantityValue != null) {
+                        onQuantityChanged(newQuantityValue)
                     }
                 },
-                modifier = Modifier.size(width = 120.dp, height = 50.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         HorizontalDivider()
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             AlcoholCalculatorSectionText("Alcohol content (%)")
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
+            AlcoholCalculatorTextField(
                 value = alcoholContentValue?.toString() ?: "",
-                onValueChange = {
-                    Log.d("AlcoholCalculator", "New value: $it")
-                    val newValue = it.toFloatOrNull()
-                    if (newValue != null) {
-                        onPercentageChanged(newValue)
+                onValueChange = { newValue ->
+                    val newAlcoholContentValue = newValue.toFloatOrNull()
+                    if (newAlcoholContentValue != null) {
+                        onPercentageChanged(newAlcoholContentValue)
                     }
                 },
-                modifier = Modifier.size(width = 120.dp, height = 50.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
         }
     }
+}
+
+@Composable
+fun AlcoholCalculatorTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardOptions: KeyboardOptions
+) {
+    OutlinedTextField(
+        modifier = modifier
+            .size(width = 106.dp, height = 50.dp)
+            .padding(0.dp),
+        value = value,
+        onValueChange = {
+            onValueChange(it)
+        },
+        textStyle = TextStyle(
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurface
+        ),
+        keyboardOptions = keyboardOptions,
+        singleLine = true,
+    )
 }
 
 @Composable
@@ -194,11 +219,13 @@ fun DrinksAmountSection(
 
 @Composable
 fun AlcoholUnitSection(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     alcoholUnits: Float?
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 32.dp),
         contentAlignment = Alignment.Center
     ) {
         if (alcoholUnits != null) {
@@ -209,7 +236,7 @@ fun AlcoholUnitSection(
         } else {
             Text(
                 text = "Fill in the details above to calculate alcohol units",
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
         }
@@ -222,7 +249,7 @@ fun AlcoholCalculatorSectionText(
 ) {
     Text(
         text,
-        style = MaterialTheme.typography.titleLarge
+        style = MaterialTheme.typography.titleMedium
     )
 }
 
