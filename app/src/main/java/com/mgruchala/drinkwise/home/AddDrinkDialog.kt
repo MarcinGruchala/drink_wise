@@ -7,8 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -42,40 +43,34 @@ fun AddDrinkDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .wrapContentSize(),
-                verticalArrangement = Arrangement.SpaceBetween
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
             ) {
                 AlcoholCalculatorContent(
                     state = state,
-                    modifier = Modifier
-                        .wrapContentSize(),
+                    modifier = Modifier.fillMaxWidth(),
                     onPercentageChanged = alcoholUnitsCalculatorViewModel::onPercentageChanged,
                     onAmountDecrement = alcoholUnitsCalculatorViewModel::onDecrement,
                     onAmountIncrement = alcoholUnitsCalculatorViewModel::onIncrement,
                     onQuantityChanged = alcoholUnitsCalculatorViewModel::onQuantityChanged
                 )
+
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    TextButton(
-                        onClick = onDismiss
-                    ) {
+                    TextButton(onClick = onDismiss) {
                         Text(
                             "Cancel",
                             modifier = Modifier.padding(horizontal = 8.dp),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    Button(
-                        onClick = onAddClick
-                    ) {
+                    Button(onClick = onAddClick) {
                         Text(
                             "Add",
                             modifier = Modifier.padding(horizontal = 8.dp),
@@ -87,6 +82,7 @@ fun AddDrinkDialog(
         }
     }
 }
+
 
 @Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
