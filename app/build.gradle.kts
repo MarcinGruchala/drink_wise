@@ -44,6 +44,7 @@ android {
 
 dependencies {
     implementation(project(":alcohol-database"))
+    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

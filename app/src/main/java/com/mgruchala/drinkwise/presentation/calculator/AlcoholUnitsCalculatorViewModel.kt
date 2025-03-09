@@ -2,6 +2,7 @@ package com.mgruchala.drinkwise.presentation.calculator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,7 +30,7 @@ class AlcoholUnitsCalculatorViewModel @Inject constructor() : ViewModel() {
         _amountOfDrinks
     ) { quantity, abv, amount ->
         val units = if (quantity != null && abv != null) {
-            calculateAlcoholUnits(quantity.toDouble(), abv.toDouble()) * amount
+            calculateAlcoholUnits(quantity, abv) * amount
         } else {
             null
         }
@@ -37,7 +38,7 @@ class AlcoholUnitsCalculatorViewModel @Inject constructor() : ViewModel() {
             drinkQuantityMl = quantity,
             alcoholPercentage = abv,
             amountOfDrinks = amount,
-            calculatedUnits = units
+            calculatedUnits = units?.toFloat()
         )
     }
         .stateIn(

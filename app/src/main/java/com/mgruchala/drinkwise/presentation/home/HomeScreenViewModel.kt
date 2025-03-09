@@ -1,35 +1,65 @@
 package com.mgruchala.drinkwise.presentation.home
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.mgruchala.drinkwise.domain.DrinksRepository
+import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeScreenViewModel @Inject constructor() : ViewModel() {
-    private val _state = MutableStateFlow(
+class HomeScreenViewModel @Inject constructor(
+    private val drinksRepository: DrinksRepository
+) : ViewModel() {
+
+    private val todayFlow = drinksRepository.getDrinksLast24Hours()
+    private val weekFlow = drinksRepository.getDrinksLast7Days()
+    private val monthFlow = drinksRepository.getDrinksLast30Days()
+
+    val state: StateFlow<HomeScreenState> = combine(
+        todayFlow,
+        weekFlow,
+        monthFlow
+    ) { todayDrinks, weekDrinks, monthDrinks ->
+
+        val todayUnits = todayDrinks.sumOf {
+            calculateAlcoholUnits(volumeMl = it.quantity, abv = it.alcoholContent)
+        }
+
+        val weekUnits = weekDrinks.sumOf {
+            calculateAlcoholUnits(volumeMl = it.quantity, abv = it.alcoholContent)
+        }
+
+        val monthUnits = monthDrinks.sumOf {
+            calculateAlcoholUnits(volumeMl = it.quantity, abv = it.alcoholContent)
+        }
+
         HomeScreenState(
-            todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(6f, 4f),
-            weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(12f, 14f),
-            monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(15f, 30f),
+            todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(todayUnits.toFloat(), 4f),
+            weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(weekUnits.toFloat(), 14f),
+            monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(monthUnits.toFloat(), 30f),
         )
-    )
-
-    val state: StateFlow<HomeScreenState>
-        get() = _state
+    }
+        // Convert the combined Flow into a StateFlow, providing an initial state.
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000), // or SharingStarted.Eagerly, etc.
+            initialValue = HomeScreenState(
+                todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 4f),
+                weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 14f),
+                monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 30f),
+            )
+        )
 }
-
 
 data class HomeScreenState(
     val todayAlcoholUnitLevel: AlcoholUnitLevel,
     val weekAlcoholUnitLevel: AlcoholUnitLevel,
     val monthAlcoholUnitLevel: AlcoholUnitLevel,
-)
-
-data class DrinkSummary(
-    val title: String,
-    val alcoholUnitCount: Float,
 )
 
 sealed class AlcoholUnitLevel(open val unitCount: Float, open val limit: Float) {
