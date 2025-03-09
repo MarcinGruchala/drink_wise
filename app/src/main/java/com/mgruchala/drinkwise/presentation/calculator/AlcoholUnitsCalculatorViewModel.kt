@@ -18,6 +18,10 @@ data class AlcoholCalculatorState(
     val calculatedUnits: Float? = null
 )
 
+fun AlcoholCalculatorState.canAddDrink(): Boolean {
+    return drinkQuantityMl != null && alcoholPercentage != null
+}
+
 @HiltViewModel
 class AlcoholUnitsCalculatorViewModel @Inject constructor() : ViewModel() {
     private val _drinkQuantityMl = MutableStateFlow<Int?>(null)

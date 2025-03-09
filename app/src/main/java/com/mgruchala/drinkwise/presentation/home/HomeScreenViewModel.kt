@@ -2,6 +2,7 @@ package com.mgruchala.drinkwise.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -44,16 +46,32 @@ class HomeScreenViewModel @Inject constructor(
             monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(monthUnits.toFloat(), 21f),
         )
     }
-        // Convert the combined Flow into a StateFlow, providing an initial state.
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000), // or SharingStarted.Eagerly, etc.
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = HomeScreenState(
                 todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 4f),
                 weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 7f),
                 monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 21f),
             )
         )
+
+    fun registerNewDrinks(quantity: Int, abv: Float, amountOfDrinks: Int) {
+        viewModelScope.launch {
+            val drinks = mutableListOf<DrinkEntity>()
+            val timestampForAllDrinks = System.currentTimeMillis()
+            for (i in 1..amountOfDrinks) {
+                val newDrink = DrinkEntity(
+                    uid = 0,
+                    quantity = quantity,
+                    alcoholContent = abv,
+                    timestamp = timestampForAllDrinks
+                )
+                drinks.add(newDrink)
+            }
+            drinksRepository.addDrinks(*drinks.toTypedArray())
+        }
+    }
 }
 
 data class HomeScreenState(

@@ -42,27 +42,28 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.collectAsState()
     HomeScreenContent(
-        state = state
+        state = state,
+        registerNewDrinks = viewModel::registerNewDrinks
     )
 }
 
 @Composable
 fun HomeScreenContent(
-    state: HomeScreenState
+    state: HomeScreenState,
+    registerNewDrinks: (Int, Float, Int) -> Unit = { _, _, _ -> }
 ) {
     val openAddDrinkDialog = rememberSaveable { mutableStateOf(false) }
 
     if (openAddDrinkDialog.value) {
         AddDrinkDialog(
-            onAddClick = {
-                openAddDrinkDialog.value = false
+            onAddClick = { quantity, abv, amount ->
+                registerNewDrinks(quantity, abv, amount)
             },
             onDismiss = {
                 openAddDrinkDialog.value = false
             }
         )
     }
-
 
     Scaffold(
         floatingActionButton = {

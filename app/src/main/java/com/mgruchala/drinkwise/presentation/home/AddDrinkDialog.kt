@@ -27,12 +27,13 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mgruchala.drinkwise.presentation.calculator.AlcoholCalculatorContent
 import com.mgruchala.drinkwise.presentation.calculator.AlcoholUnitsCalculatorViewModel
+import com.mgruchala.drinkwise.presentation.calculator.canAddDrink
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
 fun AddDrinkDialog(
     alcoholUnitsCalculatorViewModel: AlcoholUnitsCalculatorViewModel = viewModel(),
-    onAddClick: () -> Unit,
+    onAddClick: (quantity: Int, abv: Float, amount: Int) -> Unit,
     onDismiss: () -> Unit
 ) {
     val state by alcoholUnitsCalculatorViewModel.state.collectAsState()
@@ -70,7 +71,21 @@ fun AddDrinkDialog(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    Button(onClick = onAddClick) {
+                    Button(
+                        onClick = {
+                            val quantity = state.drinkQuantityMl
+                            val abv = state.alcoholPercentage
+                            requireNotNull(quantity) { "Quantity cannot be null." }
+                            requireNotNull(abv) { "Abv cannot be null." }
+                            onAddClick(
+                                quantity,
+                                abv,
+                                state.amountOfDrinks
+                            )
+                            onDismiss()
+                        },
+                        enabled = state.canAddDrink()
+                    ) {
                         Text(
                             "Add",
                             modifier = Modifier.padding(horizontal = 8.dp),
@@ -94,10 +109,9 @@ fun AddDrinkDialog(
 )
 fun AddDrinkDialogPreviewDarkTheme() {
     DrinkWiseTheme {
-
         Scaffold {
             AddDrinkDialog(
-                onAddClick = {},
+                onAddClick = { _, _, _ -> },
                 onDismiss = {}
             )
         }
@@ -116,7 +130,7 @@ fun AddDrinkDialogPreviewLightTheme() {
     DrinkWiseTheme {
         Scaffold {
             AddDrinkDialog(
-                onAddClick = {},
+                onAddClick = { _, _, _ -> },
                 onDismiss = {}
             )
         }
