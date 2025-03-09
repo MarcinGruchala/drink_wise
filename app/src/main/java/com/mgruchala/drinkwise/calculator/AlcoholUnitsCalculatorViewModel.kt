@@ -2,11 +2,13 @@ package com.mgruchala.drinkwise.calculator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
 data class AlcoholCalculatorState(
     val drinkQuantityMl: Int? = null,
@@ -15,7 +17,8 @@ data class AlcoholCalculatorState(
     val calculatedUnits: Float? = null
 )
 
-class AlcoholUnitsCalculatorViewModel : ViewModel() {
+@HiltViewModel
+class AlcoholUnitsCalculatorViewModel @Inject constructor() : ViewModel() {
     private val _drinkQuantityMl = MutableStateFlow<Int?>(null)
     private val _alcoholPercentage = MutableStateFlow<Float?>(null)
     private val _amountOfDrinks = MutableStateFlow(1)
