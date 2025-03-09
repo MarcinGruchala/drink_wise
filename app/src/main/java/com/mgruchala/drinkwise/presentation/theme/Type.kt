@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.theme
+package com.mgruchala.drinkwise.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.home
+package com.mgruchala.drinkwise.presentation.home
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
@@ -25,9 +25,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mgruchala.drinkwise.calculator.AlcoholCalculatorContent
-import com.mgruchala.drinkwise.calculator.AlcoholUnitsCalculatorViewModel
-import com.mgruchala.drinkwise.theme.DrinkWiseTheme
+import com.mgruchala.drinkwise.presentation.calculator.AlcoholCalculatorContent
+import com.mgruchala.drinkwise.presentation.calculator.AlcoholUnitsCalculatorViewModel
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
 fun AddDrinkDialog(

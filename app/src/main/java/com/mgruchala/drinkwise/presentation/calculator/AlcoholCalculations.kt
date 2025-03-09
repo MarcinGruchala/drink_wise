@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.calculator
+package com.mgruchala.drinkwise.presentation.calculator
 
 /**
  * Calculates the number of alcohol units in a drink.

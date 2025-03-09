@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.calculator
+package com.mgruchala.drinkwise.presentation.calculator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

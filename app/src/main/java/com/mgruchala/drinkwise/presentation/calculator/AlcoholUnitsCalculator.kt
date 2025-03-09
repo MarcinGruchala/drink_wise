@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.calculator
+package com.mgruchala.drinkwise.presentation.calculator
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mgruchala.drinkwise.theme.DrinkWiseTheme
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
 fun AlcoholCalculatorView(

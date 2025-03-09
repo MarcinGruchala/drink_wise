@@ -1,14 +1,14 @@
-package com.mgruchala.drinkwise.calendar
+package com.mgruchala.drinkwise.presentation.settings
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 @Composable
-fun CalendarScreen() {
+fun SettingsScreen() {
     Box {
         Text(
-            text = "Calendar screen",
+            text = "Settings screen",
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.home
+package com.mgruchala.drinkwise.presentation.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -31,10 +31,10 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mgruchala.drinkwise.theme.AlcoholUnitLevelAlarming
-import com.mgruchala.drinkwise.theme.AlcoholUnitLevelHigh
-import com.mgruchala.drinkwise.theme.AlcoholUnitLevelLow
-import com.mgruchala.drinkwise.theme.DrinkWiseTheme
+import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelAlarming
+import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelHigh
+import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelLow
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
 fun HomeScreen(

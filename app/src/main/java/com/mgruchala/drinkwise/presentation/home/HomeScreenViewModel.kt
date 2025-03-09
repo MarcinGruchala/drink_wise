@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.home
+package com.mgruchala.drinkwise.presentation.home
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
