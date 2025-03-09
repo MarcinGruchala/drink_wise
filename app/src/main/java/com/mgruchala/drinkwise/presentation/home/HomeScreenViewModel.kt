@@ -40,8 +40,8 @@ class HomeScreenViewModel @Inject constructor(
 
         HomeScreenState(
             todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(todayUnits.toFloat(), 4f),
-            weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(weekUnits.toFloat(), 14f),
-            monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(monthUnits.toFloat(), 30f),
+            weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(weekUnits.toFloat(), 7f),
+            monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(monthUnits.toFloat(), 21f),
         )
     }
         // Convert the combined Flow into a StateFlow, providing an initial state.
@@ -50,8 +50,8 @@ class HomeScreenViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000), // or SharingStarted.Eagerly, etc.
             initialValue = HomeScreenState(
                 todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 4f),
-                weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 14f),
-                monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 30f),
+                weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 7f),
+                monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(0f, 21f),
             )
         )
 }
