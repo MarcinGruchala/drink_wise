@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Drink Wise"
 include(":app")
+include(":alcohol-database")
