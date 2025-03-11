@@ -71,4 +71,10 @@ class AlcoholUnitsCalculatorViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    fun resetAlcoholCalculator() {
+        _drinkQuantityMl.value = null
+        _alcoholPercentage.value = null
+        _amountOfDrinks.value = 1
+    }
+
 }

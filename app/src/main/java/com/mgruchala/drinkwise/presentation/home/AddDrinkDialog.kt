@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -33,10 +34,17 @@ import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 @Composable
 fun AddDrinkDialog(
     alcoholUnitsCalculatorViewModel: AlcoholUnitsCalculatorViewModel = viewModel(),
-    onAddClick: (quantity: Int, abv: Float, amount: Int) -> Unit,
+    onAddClick: (quantityMl: Int, abvPercentage: Float, numberOfDrinks: Int) -> Unit,
     onDismiss: () -> Unit
 ) {
     val state by alcoholUnitsCalculatorViewModel.state.collectAsState()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            alcoholUnitsCalculatorViewModel.resetAlcoholCalculator()
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
     ) {
@@ -73,10 +81,8 @@ fun AddDrinkDialog(
                     }
                     Button(
                         onClick = {
-                            val quantity = state.drinkQuantityMl
-                            val abv = state.alcoholPercentage
-                            requireNotNull(quantity) { "Quantity cannot be null." }
-                            requireNotNull(abv) { "Abv cannot be null." }
+                            val quantity = state.drinkQuantityMl ?: 0
+                            val abv = state.alcoholPercentage ?: 0f
                             onAddClick(
                                 quantity,
                                 abv,
