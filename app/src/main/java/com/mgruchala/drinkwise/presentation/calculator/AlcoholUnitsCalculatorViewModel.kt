@@ -14,7 +14,7 @@ import javax.inject.Inject
 data class AlcoholCalculatorState(
     val drinkQuantityMl: Int? = null,
     val alcoholPercentage: Float? = null,
-    val amountOfDrinks: Int = 1,
+    val numberOfDrinks: Int = 1,
     val calculatedUnits: Float? = null
 )
 
@@ -26,22 +26,22 @@ fun AlcoholCalculatorState.canAddDrink(): Boolean {
 class AlcoholUnitsCalculatorViewModel @Inject constructor() : ViewModel() {
     private val _drinkQuantityMl = MutableStateFlow<Int?>(null)
     private val _alcoholPercentage = MutableStateFlow<Float?>(null)
-    private val _amountOfDrinks = MutableStateFlow(1)
+    private val _numberOfDrinks = MutableStateFlow(1)
 
     val state: StateFlow<AlcoholCalculatorState> = combine(
         _drinkQuantityMl,
         _alcoholPercentage,
-        _amountOfDrinks
-    ) { quantity, abv, amount ->
+        _numberOfDrinks
+    ) { quantity, abv, number ->
         val units = if (quantity != null && abv != null) {
-            calculateAlcoholUnits(quantity, abv) * amount
+            calculateAlcoholUnits(quantity, abv) * number
         } else {
             null
         }
         AlcoholCalculatorState(
             drinkQuantityMl = quantity,
             alcoholPercentage = abv,
-            amountOfDrinks = amount,
+            numberOfDrinks = number,
             calculatedUnits = units?.toFloat()
         )
     }
@@ -61,20 +61,20 @@ class AlcoholUnitsCalculatorViewModel @Inject constructor() : ViewModel() {
     }
 
     fun onIncrement() {
-        _amountOfDrinks.value += 1
+        _numberOfDrinks.value += 1
     }
 
     fun onDecrement() {
-        val current = _amountOfDrinks.value
+        val current = _numberOfDrinks.value
         if (current > 1) {
-            _amountOfDrinks.value = current - 1
+            _numberOfDrinks.value = current - 1
         }
     }
 
     fun resetAlcoholCalculator() {
         _drinkQuantityMl.value = null
         _alcoholPercentage.value = null
-        _amountOfDrinks.value = 1
+        _numberOfDrinks.value = 1
     }
 
 }

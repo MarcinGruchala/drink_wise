@@ -63,8 +63,8 @@ fun AddDrinkDialog(
                     state = state,
                     modifier = Modifier.fillMaxWidth(),
                     onPercentageChanged = alcoholUnitsCalculatorViewModel::onPercentageChanged,
-                    onAmountDecrement = alcoholUnitsCalculatorViewModel::onDecrement,
-                    onAmountIncrement = alcoholUnitsCalculatorViewModel::onIncrement,
+                    onNumberDecrement = alcoholUnitsCalculatorViewModel::onDecrement,
+                    onNumberIncrement = alcoholUnitsCalculatorViewModel::onIncrement,
                     onQuantityChanged = alcoholUnitsCalculatorViewModel::onQuantityChanged
                 )
 
@@ -86,7 +86,7 @@ fun AddDrinkDialog(
                             onAddClick(
                                 quantity,
                                 abv,
-                                state.amountOfDrinks
+                                state.numberOfDrinks
                             )
                             onDismiss()
                         },

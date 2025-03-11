@@ -56,11 +56,11 @@ class HomeScreenViewModel @Inject constructor(
             )
         )
 
-    fun registerNewDrinks(quantity: Int, abv: Float, amountOfDrinks: Int) {
+    fun registerNewDrinks(quantity: Int, abv: Float, numberOfDrinks: Int) {
         viewModelScope.launch {
             val drinks = mutableListOf<DrinkEntity>()
             val timestampForAllDrinks = System.currentTimeMillis()
-            for (i in 1..amountOfDrinks) {
+            for (i in 1..numberOfDrinks) {
                 val newDrink = DrinkEntity(
                     uid = 0,
                     quantity = quantity,
