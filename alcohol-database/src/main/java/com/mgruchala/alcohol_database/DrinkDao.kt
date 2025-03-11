@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.Flow
 interface DrinkDao {
     @Query("SELECT * FROM drinks WHERE timestamp >= :cutoff ORDER BY timestamp DESC")
     fun getDrinksSince(cutoff: Long): Flow<List<DrinkEntity>>
+    
+    @Query("SELECT * FROM drinks ORDER BY timestamp DESC")
+    fun getAllDrinks(): Flow<List<DrinkEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDrinks(drinks: List<DrinkEntity>)

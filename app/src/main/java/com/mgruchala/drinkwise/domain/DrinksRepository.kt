@@ -21,8 +21,18 @@ interface DrinksRepository {
     fun getDrinksLast30Days(): Flow<List<DrinkEntity>>
 
     /**
+     * Fetches all drinks in the database, as a Flow.
+     */
+    fun getAllDrinks(): Flow<List<DrinkEntity>>
+
+    /**
      * Inserts one or more drinks of same quantity and alcohol content.
      */
     suspend fun addDrinks(vararg drinks: DrinkEntity)
+
+    /**
+     * Deletes a drink from the database.
+     */
+    suspend fun deleteDrink(drink: DrinkEntity): Int
 }
 

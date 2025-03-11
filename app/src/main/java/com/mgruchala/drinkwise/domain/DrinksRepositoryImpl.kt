@@ -22,9 +22,17 @@ class DrinksRepositoryImpl(
         val cutoff = System.currentTimeMillis() - THIRTY_DAYS_IN_MILLIS
         return drinkDao.getDrinksSince(cutoff)
     }
+    
+    override fun getAllDrinks(): Flow<List<DrinkEntity>> {
+        return drinkDao.getAllDrinks()
+    }
 
     override suspend fun addDrinks(vararg drinks: DrinkEntity) {
         drinkDao.insertDrinks(drinks.toList())
+    }
+    
+    override suspend fun deleteDrink(drink: DrinkEntity): Int {
+        return drinkDao.deleteDrink(drink)
     }
 
     companion object {
