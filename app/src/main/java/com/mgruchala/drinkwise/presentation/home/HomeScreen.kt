@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.home
+package com.mgruchala.drinkwise.presentation.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -30,39 +30,40 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mgruchala.drinkwise.theme.AlcoholUnitLevelAlarming
-import com.mgruchala.drinkwise.theme.AlcoholUnitLevelHigh
-import com.mgruchala.drinkwise.theme.AlcoholUnitLevelLow
-import com.mgruchala.drinkwise.theme.DrinkWiseTheme
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelAlarming
+import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelHigh
+import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelLow
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeScreenViewModel = viewModel()
+    viewModel: HomeScreenViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     HomeScreenContent(
-        state = state
+        state = state,
+        registerNewDrinks = viewModel::registerNewDrinks
     )
 }
 
 @Composable
 fun HomeScreenContent(
-    state: HomeScreenState
+    state: HomeScreenState,
+    registerNewDrinks: (Int, Float, Int) -> Unit = { _, _, _ -> }
 ) {
     val openAddDrinkDialog = rememberSaveable { mutableStateOf(false) }
 
     if (openAddDrinkDialog.value) {
         AddDrinkDialog(
-            onAddClick = {
-                openAddDrinkDialog.value = false
+            onAddClick = { quantity, abv, amount ->
+                registerNewDrinks(quantity, abv, amount)
             },
             onDismiss = {
                 openAddDrinkDialog.value = false
             }
         )
     }
-
 
     Scaffold(
         floatingActionButton = {

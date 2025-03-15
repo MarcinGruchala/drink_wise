@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.calculator
+package com.mgruchala.drinkwise.presentation.calculator
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mgruchala.drinkwise.theme.DrinkWiseTheme
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
 fun AlcoholCalculatorView(
@@ -46,8 +46,8 @@ fun AlcoholCalculatorView(
         state = state,
         onQuantityChanged = viewModel::onQuantityChanged,
         onPercentageChanged = viewModel::onPercentageChanged,
-        onAmountDecrement = viewModel::onDecrement,
-        onAmountIncrement = viewModel::onIncrement,
+        onNumberDecrement = viewModel::onDecrement,
+        onNumberIncrement = viewModel::onIncrement,
         isInDialog = false
     )
 }
@@ -58,8 +58,8 @@ fun AlcoholCalculatorContent(
     state: AlcoholCalculatorState,
     onQuantityChanged: (Int) -> Unit = {},
     onPercentageChanged: (Float) -> Unit = {},
-    onAmountDecrement: () -> Unit = {},
-    onAmountIncrement: () -> Unit = {},
+    onNumberDecrement: () -> Unit = {},
+    onNumberIncrement: () -> Unit = {},
     isInDialog: Boolean = true
 ) {
     Column(
@@ -78,11 +78,11 @@ fun AlcoholCalculatorContent(
             onPercentageChanged = onPercentageChanged
         )
         HorizontalDivider()
-        DrinksAmountSection(
+        DrinksNumberSection(
             modifier = Modifier.padding(vertical = 24.dp, horizontal = 16.dp),
-            amount = state.amountOfDrinks,
-            onDecrement = onAmountDecrement,
-            onIncrement = onAmountIncrement
+            number = state.numberOfDrinks,
+            onDecrement = onNumberDecrement,
+            onIncrement = onNumberIncrement
         )
         HorizontalDivider()
         AlcoholUnitSection(
@@ -188,9 +188,9 @@ fun AlcoholCalculatorTextField(
 }
 
 @Composable
-fun DrinksAmountSection(
+fun DrinksNumberSection(
     modifier: Modifier,
-    amount: Int,
+    number: Int,
     onDecrement: () -> Unit,
     onIncrement: () -> Unit
 ) {
@@ -198,20 +198,20 @@ fun DrinksAmountSection(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AlcoholCalculatorSectionText("Amount of drinks: $amount")
+        AlcoholCalculatorSectionText("Number of drinks: $number")
         Spacer(modifier = Modifier.weight(1f))
 
         IconButton(onClick = { onDecrement() }) {
             Icon(
                 imageVector = Icons.Rounded.Remove,
-                contentDescription = "Decrease amount"
+                contentDescription = "Decrease number"
             )
         }
 
         IconButton(onClick = { onIncrement() }) {
             Icon(
                 imageVector = Icons.Rounded.Add,
-                contentDescription = "Increase amount"
+                contentDescription = "Increase number"
             )
         }
     }
@@ -258,7 +258,7 @@ val alcoholCalculatorInitialState = AlcoholCalculatorState()
 val alcoholUnitsFilledState = AlcoholCalculatorState(
     drinkQuantityMl = 250,
     alcoholPercentage = 40f,
-    amountOfDrinks = 2,
+    numberOfDrinks = 2,
     calculatedUnits = 1.0f
 )
 

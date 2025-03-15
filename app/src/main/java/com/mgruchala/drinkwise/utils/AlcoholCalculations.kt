@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.calculator
+package com.mgruchala.drinkwise.utils
 
 /**
  * Calculates the number of alcohol units in a drink.
@@ -7,6 +7,6 @@ package com.mgruchala.drinkwise.calculator
  * @param abv The Alcohol by Volume (ABV) percentage of the drink.
  * @return The number of alcohol units.
  */
-fun calculateAlcoholUnits(volumeMl: Double, abv: Double): Float {
-    return (volumeMl * abv).toFloat() / 1000
+fun calculateAlcoholUnits(volumeMl: Int, abv: Float): Double {
+    return (volumeMl * abv).toDouble() / 1000
 }

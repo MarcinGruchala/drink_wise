@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.theme
+package com.mgruchala.drinkwise.presentation.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

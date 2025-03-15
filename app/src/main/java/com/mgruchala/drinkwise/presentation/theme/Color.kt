@@ -1,7 +1,7 @@
-package com.mgruchala.drinkwise.theme
+package com.mgruchala.drinkwise.presentation.theme
 
 import androidx.compose.ui.graphics.Color
-import com.mgruchala.drinkwise.home.AlcoholUnitLevel
+import com.mgruchala.drinkwise.presentation.home.AlcoholUnitLevel
 
 
 val AlcoholUnitLevelLow = Color(0xFF4CAF50)

@@ -1,4 +1,4 @@
-package com.mgruchala.drinkwise.home
+package com.mgruchala.drinkwise.presentation.home
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -25,17 +26,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mgruchala.drinkwise.calculator.AlcoholCalculatorContent
-import com.mgruchala.drinkwise.calculator.AlcoholUnitsCalculatorViewModel
-import com.mgruchala.drinkwise.theme.DrinkWiseTheme
+import com.mgruchala.drinkwise.presentation.calculator.AlcoholCalculatorContent
+import com.mgruchala.drinkwise.presentation.calculator.AlcoholUnitsCalculatorViewModel
+import com.mgruchala.drinkwise.presentation.calculator.canAddDrink
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
 fun AddDrinkDialog(
     alcoholUnitsCalculatorViewModel: AlcoholUnitsCalculatorViewModel = viewModel(),
-    onAddClick: () -> Unit,
+    onAddClick: (quantityMl: Int, abvPercentage: Float, numberOfDrinks: Int) -> Unit,
     onDismiss: () -> Unit
 ) {
     val state by alcoholUnitsCalculatorViewModel.state.collectAsState()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            alcoholUnitsCalculatorViewModel.resetAlcoholCalculator()
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
     ) {
@@ -54,8 +63,8 @@ fun AddDrinkDialog(
                     state = state,
                     modifier = Modifier.fillMaxWidth(),
                     onPercentageChanged = alcoholUnitsCalculatorViewModel::onPercentageChanged,
-                    onAmountDecrement = alcoholUnitsCalculatorViewModel::onDecrement,
-                    onAmountIncrement = alcoholUnitsCalculatorViewModel::onIncrement,
+                    onNumberDecrement = alcoholUnitsCalculatorViewModel::onDecrement,
+                    onNumberIncrement = alcoholUnitsCalculatorViewModel::onIncrement,
                     onQuantityChanged = alcoholUnitsCalculatorViewModel::onQuantityChanged
                 )
 
@@ -70,7 +79,19 @@ fun AddDrinkDialog(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    Button(onClick = onAddClick) {
+                    Button(
+                        onClick = {
+                            val quantity = state.drinkQuantityMl ?: 0
+                            val abv = state.alcoholPercentage ?: 0f
+                            onAddClick(
+                                quantity,
+                                abv,
+                                state.numberOfDrinks
+                            )
+                            onDismiss()
+                        },
+                        enabled = state.canAddDrink()
+                    ) {
                         Text(
                             "Add",
                             modifier = Modifier.padding(horizontal = 8.dp),
@@ -94,10 +115,9 @@ fun AddDrinkDialog(
 )
 fun AddDrinkDialogPreviewDarkTheme() {
     DrinkWiseTheme {
-
         Scaffold {
             AddDrinkDialog(
-                onAddClick = {},
+                onAddClick = { _, _, _ -> },
                 onDismiss = {}
             )
         }
@@ -116,7 +136,7 @@ fun AddDrinkDialogPreviewLightTheme() {
     DrinkWiseTheme {
         Scaffold {
             AddDrinkDialog(
-                onAddClick = {},
+                onAddClick = { _, _, _ -> },
                 onDismiss = {}
             )
         }

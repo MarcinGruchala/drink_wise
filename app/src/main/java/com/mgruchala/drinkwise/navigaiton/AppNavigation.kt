@@ -13,10 +13,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.mgruchala.drinkwise.calculator.AlcoholCalculatorView
-import com.mgruchala.drinkwise.calendar.CalendarScreen
-import com.mgruchala.drinkwise.home.HomeScreen
-import com.mgruchala.drinkwise.settings.SettingsScreen
+import com.mgruchala.drinkwise.presentation.calculator.AlcoholCalculatorView
+import com.mgruchala.drinkwise.presentation.calendar.CalendarScreen
+import com.mgruchala.drinkwise.presentation.home.HomeScreen
+import com.mgruchala.drinkwise.presentation.settings.SettingsScreen
 
 
 @Composable

@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.mgruchala.drinkwise.navigaiton.AppNavigation
-import com.mgruchala.drinkwise.theme.DrinkWiseTheme
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
