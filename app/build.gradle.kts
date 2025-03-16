@@ -80,6 +80,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)
+    implementation(project(":user-preferences"))
     kapt(libs.hilt.android.compiler)
     implementation(libs.material.icons.extended)
     testImplementation(libs.junit)
