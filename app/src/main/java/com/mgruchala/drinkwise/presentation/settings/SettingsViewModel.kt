@@ -12,11 +12,15 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class LimitType {
+    DAILY, WEEKLY, MONTHLY
+}
+
 data class SettingsState(
     val dailyLimit: Float = 7f,
     val weeklyLimit: Float = 14f,
     val monthlyLimit: Float = 30f,
-    val isSaving: Boolean = false,
+    val savingLimits: Set<LimitType> = emptySet(),
     val showSuccessMessage: Boolean = false
 )
 
@@ -25,19 +29,19 @@ class SettingsViewModel @Inject constructor(
     private val preferencesRepository: AlcoholLimitPreferencesRepository
 ) : ViewModel() {
 
-    private val _savingState = MutableStateFlow(false)
+    private val _savingLimits = MutableStateFlow<Set<LimitType>>(emptySet())
     private val _showSuccessMessage = MutableStateFlow(false)
 
     val state: StateFlow<SettingsState> = combine(
         preferencesRepository.userPreferencesFlow,
-        _savingState,
+        _savingLimits,
         _showSuccessMessage
-    ) { preferences, isSaving, showSuccess ->
+    ) { preferences, savingLimits, showSuccess ->
         SettingsState(
             dailyLimit = preferences.dailyAlcoholUnitLimit,
             weeklyLimit = preferences.weeklyAlcoholUnitLimit,
             monthlyLimit = preferences.monthlyAlcoholUnitLimit,
-            isSaving = isSaving,
+            savingLimits = savingLimits,
             showSuccessMessage = showSuccess
         )
     }.stateIn(
@@ -48,27 +52,27 @@ class SettingsViewModel @Inject constructor(
 
     fun updateDailyLimit(limit: Float) {
         viewModelScope.launch {
-            _savingState.value = true
+            _savingLimits.value += LimitType.DAILY
             preferencesRepository.updateDailyAlcoholLimit(limit)
-            _savingState.value = false
+            _savingLimits.value -= LimitType.DAILY
             showSuccessMessage()
         }
     }
 
     fun updateWeeklyLimit(limit: Float) {
         viewModelScope.launch {
-            _savingState.value = true
+            _savingLimits.value += LimitType.WEEKLY
             preferencesRepository.updateWeeklyAlcoholLimit(limit)
-            _savingState.value = false
+            _savingLimits.value -= LimitType.WEEKLY
             showSuccessMessage()
         }
     }
 
     fun updateMonthlyLimit(limit: Float) {
         viewModelScope.launch {
-            _savingState.value = true
+            _savingLimits.value += LimitType.MONTHLY
             preferencesRepository.updateMonthlyAlcoholLimit(limit)
-            _savingState.value = false
+            _savingLimits.value -= LimitType.MONTHLY
             showSuccessMessage()
         }
     }

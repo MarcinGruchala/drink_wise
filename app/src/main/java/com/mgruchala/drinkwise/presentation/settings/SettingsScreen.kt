@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mgruchala.drinkwise.presentation.settings.LimitType
 
 @Composable
 fun SettingsScreen(
@@ -71,7 +72,7 @@ fun SettingsScreen(
             description = "Maximum alcohol units per day (24 hours)",
             initialValue = state.dailyLimit,
             onSave = { viewModel.updateDailyLimit(it) },
-            isSaving = state.isSaving
+            isSaving = LimitType.DAILY in state.savingLimits
         )
 
         LimitSettingCard(
@@ -79,7 +80,7 @@ fun SettingsScreen(
             description = "Maximum alcohol units per week (7 days)",
             initialValue = state.weeklyLimit,
             onSave = { viewModel.updateWeeklyLimit(it) },
-            isSaving = state.isSaving
+            isSaving = LimitType.WEEKLY in state.savingLimits
         )
 
         LimitSettingCard(
@@ -87,7 +88,7 @@ fun SettingsScreen(
             description = "Maximum alcohol units per month (30 days)",
             initialValue = state.monthlyLimit,
             onSave = { viewModel.updateMonthlyLimit(it) },
-            isSaving = state.isSaving
+            isSaving = LimitType.MONTHLY in state.savingLimits
         )
     }
 
