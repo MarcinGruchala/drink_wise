@@ -42,11 +42,9 @@ fun SettingsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(state.showSuccessMessage) {
         if (state.showSuccessMessage) {
-            focusManager.clearFocus()
             snackbarHostState.showSnackbar("Limit updated successfully")
             viewModel.dismissSuccessMessage()
         }
@@ -94,10 +92,7 @@ fun SettingsScreen(
                 title = "Monthly Limit",
                 description = "Maximum alcohol units per month (30 days)",
                 currentValue = state.monthlyLimit,
-                onApply = {
-                    viewModel.updateMonthlyLimit(it)
-//                    focusManager.clearFocus()
-                },
+                onApply = { viewModel.updateMonthlyLimit(it) },
                 isSaving = LimitType.MONTHLY in state.savingLimits
             )
         }
@@ -114,6 +109,7 @@ fun LimitSettingCard(
 ) {
     var value by remember(currentValue) { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     Card(
         modifier = Modifier.fillMaxWidth()
@@ -161,7 +157,10 @@ fun LimitSettingCard(
                 Button(
                     onClick = {
                         value.toFloatOrNull()?.let {
-                            if (it > 0) onApply(it)
+                            if (it > 0) {
+                                focusManager.clearFocus()
+                                onApply(it)
+                            }
                         }
                     },
                     enabled = !isSaving && !isError && value.toFloatOrNull() != null
