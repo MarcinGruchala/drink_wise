@@ -13,7 +13,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -32,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mgruchala.drinkwise.presentation.settings.LimitType
 
 @Composable
 fun SettingsScreen(
@@ -43,7 +41,7 @@ fun SettingsScreen(
 
     LaunchedEffect(state.showSuccessMessage) {
         if (state.showSuccessMessage) {
-            snackbarHostState.showSnackbar("Settings saved successfully")
+            snackbarHostState.showSnackbar("Limit updated successfully")
             viewModel.dismissSuccessMessage()
         }
     }
@@ -70,7 +68,7 @@ fun SettingsScreen(
         LimitSettingCard(
             title = "Daily Limit",
             description = "Maximum alcohol units per day (24 hours)",
-            initialValue = state.dailyLimit,
+            currentValue = state.dailyLimit,
             onSave = { viewModel.updateDailyLimit(it) },
             isSaving = LimitType.DAILY in state.savingLimits
         )
@@ -78,7 +76,7 @@ fun SettingsScreen(
         LimitSettingCard(
             title = "Weekly Limit",
             description = "Maximum alcohol units per week (7 days)",
-            initialValue = state.weeklyLimit,
+            currentValue = state.weeklyLimit,
             onSave = { viewModel.updateWeeklyLimit(it) },
             isSaving = LimitType.WEEKLY in state.savingLimits
         )
@@ -86,7 +84,7 @@ fun SettingsScreen(
         LimitSettingCard(
             title = "Monthly Limit",
             description = "Maximum alcohol units per month (30 days)",
-            initialValue = state.monthlyLimit,
+            currentValue = state.monthlyLimit,
             onSave = { viewModel.updateMonthlyLimit(it) },
             isSaving = LimitType.MONTHLY in state.savingLimits
         )
@@ -101,11 +99,11 @@ fun SettingsScreen(
 fun LimitSettingCard(
     title: String,
     description: String,
-    initialValue: Float,
+    currentValue: Float,
     onSave: (Float) -> Unit,
     isSaving: Boolean
 ) {
-    var value by remember(initialValue) { mutableStateOf(initialValue.toString()) }
+    var value by remember(currentValue) { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
 
     Card(
@@ -140,7 +138,7 @@ fun LimitSettingCard(
                         value = it
                         isError = it.toFloatOrNull() == null || it.toFloatOrNull()!! <= 0
                     },
-                    label = { Text("Units") },
+                    label = { Text("Current limit: $currentValue") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.weight(1f),
                     isError = isError,
@@ -159,14 +157,7 @@ fun LimitSettingCard(
                     },
                     enabled = !isSaving && !isError && value.toFloatOrNull() != null
                 ) {
-                    if (isSaving) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.height(24.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text("Save")
-                    }
+                    Text("Apply")
                 }
             }
         }
