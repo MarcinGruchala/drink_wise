@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
+import com.mgruchala.user_preferences.AlcoholLimitPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,18 +16,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
-    private val drinksRepository: DrinksRepository
+    private val drinksRepository: DrinksRepository,
+    private val alcoholLimitPreferencesRepository: AlcoholLimitPreferencesRepository
 ) : ViewModel() {
 
     private val todayFlow = drinksRepository.getDrinksLast24Hours()
     private val weekFlow = drinksRepository.getDrinksLast7Days()
     private val monthFlow = drinksRepository.getDrinksLast30Days()
+    private val userPreferencesFlow = alcoholLimitPreferencesRepository.userPreferencesFlow
 
     val state: StateFlow<HomeScreenState> = combine(
         todayFlow,
         weekFlow,
-        monthFlow
-    ) { todayDrinks, weekDrinks, monthDrinks ->
+        monthFlow,
+        userPreferencesFlow
+    ) { todayDrinks, weekDrinks, monthDrinks, userPreferences ->
 
         val todayUnits = todayDrinks.sumOf {
             calculateAlcoholUnits(volumeMl = it.quantity, abv = it.alcoholContent)
@@ -41,9 +45,9 @@ class HomeScreenViewModel @Inject constructor(
         }
 
         HomeScreenState(
-            todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(todayUnits.toFloat(), 4f),
-            weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(weekUnits.toFloat(), 7f),
-            monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(monthUnits.toFloat(), 21f),
+            todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(todayUnits.toFloat(), userPreferences.dailyAlcoholUnitLimit),
+            weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(weekUnits.toFloat(), userPreferences.weeklyAlcoholUnitLimit),
+            monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(monthUnits.toFloat(), userPreferences.monthlyAlcoholUnitLimit),
         )
     }
         .stateIn(
