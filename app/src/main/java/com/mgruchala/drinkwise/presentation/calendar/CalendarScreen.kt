@@ -1,5 +1,6 @@
 package com.mgruchala.drinkwise.presentation.calendar
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -27,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -43,12 +45,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.delay
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.Devices
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun CalendarScreen(
@@ -61,26 +63,28 @@ fun CalendarScreen(
         onDeleteDrink = viewModel::deleteDrink
     )
 }
-
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CalendarScreenContent(
     state: CalendarScreenState,
     onDeleteDrink: (Int) -> Unit = { _ -> }
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else if (state.drinks.isEmpty()) {
-            Text(
-                text = "No drinks recorded",
-                modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.bodyLarge
-            )
-        } else {
-            DrinksList(
-                drinks = state.drinks,
-                onDeleteDrink = onDeleteDrink
-            )
+    Scaffold {
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (state.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else if (state.drinks.isEmpty()) {
+                Text(
+                    text = "No drinks recorded",
+                    modifier = Modifier.align(Alignment.Center),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            } else {
+                DrinksList(
+                    drinks = state.drinks,
+                    onDeleteDrink = onDeleteDrink
+                )
+            }
         }
     }
 }
