@@ -1,5 +1,6 @@
 package com.mgruchala.drinkwise.presentation.calendar
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -45,6 +46,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Devices
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
 fun CalendarScreen(
@@ -52,6 +56,17 @@ fun CalendarScreen(
 ) {
     val state by viewModel.state.collectAsState()
     
+    CalendarScreenContent(
+        state = state,
+        onDeleteDrink = viewModel::deleteDrink
+    )
+}
+
+@Composable
+fun CalendarScreenContent(
+    state: CalendarScreenState,
+    onDeleteDrink: (Int) -> Unit = { _ -> }
+) {
     Box(modifier = Modifier.fillMaxSize()) {
         if (state.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -64,7 +79,7 @@ fun CalendarScreen(
         } else {
             DrinksList(
                 drinks = state.drinks,
-                onDeleteDrink = viewModel::deleteDrink
+                onDeleteDrink = onDeleteDrink
             )
         }
     }
@@ -236,3 +251,63 @@ fun DrinkCard(
         }
     }
 }
+
+@Composable
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+fun CalendarScreenPreviewLightTheme() {
+    DrinkWiseTheme {
+        CalendarScreenContent(
+            state = dummyCalendarScreenState
+        )
+    }
+}
+
+@Composable
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+fun CalendarScreenPreviewDarkTheme() {
+    DrinkWiseTheme(darkTheme = true) {
+        CalendarScreenContent(
+            state = dummyCalendarScreenState
+        )
+    }
+}
+
+val dummyCalendarScreenState = CalendarScreenState(
+    drinks = listOf(
+        DrinkItem(
+            id = 1,
+            quantity = 330,
+            alcoholContent = 5.0f,
+            alcoholUnits = 1.65,
+            formattedDate = "Jan 01, 2023 18:30",
+            timestamp = 1672596600000 // Jan 01, 2023 18:30
+        ),
+        DrinkItem(
+            id = 2,
+            quantity = 500,
+            alcoholContent = 4.5f,
+            alcoholUnits = 2.25,
+            formattedDate = "Jan 02, 2023 20:15",
+            timestamp = 1672689300000 // Jan 02, 2023 20:15
+        ),
+        DrinkItem(
+            id = 3,
+            quantity = 50,
+            alcoholContent = 40.0f,
+            alcoholUnits = 2.0,
+            formattedDate = "Jan 03, 2023 22:45",
+            timestamp = 1672783500000 // Jan 03, 2023 22:45
+        )
+    ),
+    isLoading = false
+)
