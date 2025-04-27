@@ -3,6 +3,7 @@ package com.mgruchala.drinkwise.presentation.calendar
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -161,25 +162,28 @@ fun EmptyDayPlaceholder() {
 fun DayCell(dayData: CalendarDayData) {
     Box(
         modifier = Modifier
-            .size(40.dp) // Consistent size
-            .background(
-                color = when {
-                    dayData.hasDrinks -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                },
-                shape = CircleShape
-            ),
+            .size(40.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = dayData.date.dayOfMonth.toString(),
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = if (dayData.hasDrinks) FontWeight.Bold else FontWeight.Normal,
-            color = when {
-                dayData.hasDrinks -> MaterialTheme.colorScheme.onPrimaryContainer
-                else -> MaterialTheme.colorScheme.onSurfaceVariant
-            }
+            fontWeight = FontWeight.Normal,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1
         )
+
+        if (dayData.hasDrinks) {
+            CircularProgressIndicator(
+                progress = {
+                    1.0f
+                },
+                modifier = Modifier.matchParentSize(),
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 2.5.dp,
+                trackColor = ProgressIndicatorDefaults.circularIndeterminateTrackColor,
+            )
+        }
     }
 }
 
@@ -192,7 +196,7 @@ fun DayCell(dayData: CalendarDayData) {
 )
 fun CalendarScreenPreviewLightTheme() {
     DrinkWiseTheme {
-        CalendarScreen() // Use the main entry point for preview
+        CalendarScreen()
     }
 }
 
