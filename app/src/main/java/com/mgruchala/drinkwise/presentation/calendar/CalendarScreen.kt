@@ -71,14 +71,11 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
                 .fillMaxSize(),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            item {
-                DayOfWeekHeader()
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
             calendarData.forEach { (month, days) ->
                 item {
                     MonthHeader(month)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    DayOfWeekHeader()
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
@@ -112,7 +109,8 @@ fun DayOfWeekHeader() {
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceAround
     ) {
-        // Assuming Monday is the start of the week
+        // Assuming Monday is the start of the week based on Locale?
+        // For simplicity using fixed English short names. Consider locale for production.
         val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         days.forEach { day ->
             Text(
