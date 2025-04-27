@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,14 +22,12 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.random.Random
 
-// Mock Data Structure
 data class CalendarDayData(
     val date: LocalDate,
     val hasDrinks: Boolean,
     val drinkCount: Int = 0
 )
 
-// Mock Data Generation (Example for 3 months)
 fun generateMockCalendarData(startMonth: YearMonth, months: Int): List<CalendarDayData> {
     val data = mutableListOf<CalendarDayData>()
     var currentMonth = startMonth
@@ -36,7 +35,6 @@ fun generateMockCalendarData(startMonth: YearMonth, months: Int): List<CalendarD
         val daysInMonth = currentMonth.lengthOfMonth()
         for (day in 1..daysInMonth) {
             val date = currentMonth.atDay(day)
-            // Ensure we have some true values for preview
             val hasDrinks = Random.nextDouble() < 0.3 // ~30% chance of having drinks
             val drinkCount = if (hasDrinks) Random.nextInt(1, 5) else 0
             data.add(CalendarDayData(date, hasDrinks, drinkCount))
@@ -68,6 +66,7 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
     Scaffold {
         LazyColumn(
             modifier = Modifier
+                .padding(horizontal = 8.dp)
                 .fillMaxSize(),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
@@ -79,10 +78,7 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Group days by week, handling padding for the first week
                 val firstDayOfMonth = days.first().date
-                val dayOfWeekOffset = (firstDayOfMonth.dayOfWeek.value % 7) // Monday=1..Sunday=7 -> 0..6 ? Let's assume week starts Monday (1) -> Sunday (7)
-                                                                              // We want offset from Monday. Monday=1 -> offset 0, Sunday=7 -> offset 6
                 val startPaddingCells = firstDayOfMonth.dayOfWeek.value - 1 // Monday = 0 padding, Sunday = 6 padding
 
                 val allCells = mutableListOf<CalendarDayData?>()
@@ -101,6 +97,8 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
     }
 }
 
+
+
 @Composable
 fun DayOfWeekHeader() {
     Row(
@@ -109,8 +107,6 @@ fun DayOfWeekHeader() {
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceAround
     ) {
-        // Assuming Monday is the start of the week based on Locale?
-        // For simplicity using fixed English short names. Consider locale for production.
         val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         days.forEach { day ->
             Text(
@@ -118,7 +114,7 @@ fun DayOfWeekHeader() {
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.width(40.dp), // Match DayCell width
+                modifier = Modifier.width(40.dp),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
@@ -146,15 +142,19 @@ fun WeekRow(weekDays: List<CalendarDayData?>) {
             if (dayData != null) {
                 DayCell(dayData)
             } else {
-                Spacer(modifier = Modifier.size(40.dp)) // Placeholder for empty days
+                EmptyDayPlaceholder()
             }
         }
-        // Add spacers if the week is not full (end of the month)
         val remainingCells = 7 - weekDays.size
         repeat(remainingCells) {
-            Spacer(modifier = Modifier.size(40.dp)) // Placeholder size
+            EmptyDayPlaceholder()
         }
     }
+}
+
+@Composable
+fun EmptyDayPlaceholder() {
+    Spacer(modifier = Modifier.size(40.dp))
 }
 
 @Composable
@@ -164,12 +164,10 @@ fun DayCell(dayData: CalendarDayData) {
             .size(40.dp) // Consistent size
             .background(
                 color = when {
-                    // Optional: Highlight today's date
-                    // dayData.date.isEqual(LocalDate.now()) -> MaterialTheme.colorScheme.tertiaryContainer
                     dayData.hasDrinks -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) // More subtle background for empty days
+                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 },
-                shape = MaterialTheme.shapes.medium // Slightly rounded corners
+                shape = CircleShape
             ),
         contentAlignment = Alignment.Center
     ) {
@@ -178,23 +176,12 @@ fun DayCell(dayData: CalendarDayData) {
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (dayData.hasDrinks) FontWeight.Bold else FontWeight.Normal,
             color = when {
-                // Optional: Highlight today's date text
-                // dayData.date.isEqual(LocalDate.now()) -> MaterialTheme.colorScheme.onTertiaryContainer
                 dayData.hasDrinks -> MaterialTheme.colorScheme.onPrimaryContainer
                 else -> MaterialTheme.colorScheme.onSurfaceVariant
             }
         )
-        // Optional: Add drink count indicator if needed later
-        // if (dayData.hasDrinks && dayData.drinkCount > 0) {
-        //     Box(modifier = Modifier.align(Alignment.BottomEnd).padding(2.dp)) {
-        //         Text(dayData.drinkCount.toString(), fontSize = 8.sp, color = MaterialTheme.colorScheme.secondary)
-        //     }
-        // }
     }
 }
-
-
-// --- Previews ---
 
 @Composable
 @Preview(
