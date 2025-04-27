@@ -2,259 +2,201 @@ package com.mgruchala.drinkwise.presentation.calendar
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.LocalDrink
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxState
-import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
-import kotlinx.coroutines.delay
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.random.Random
+
+// Mock Data Structure
+data class CalendarDayData(
+    val date: LocalDate,
+    val hasDrinks: Boolean,
+    val drinkCount: Int = 0
+)
+
+// Mock Data Generation (Example for 3 months)
+fun generateMockCalendarData(startMonth: YearMonth, months: Int): List<CalendarDayData> {
+    val data = mutableListOf<CalendarDayData>()
+    var currentMonth = startMonth
+    repeat(months) {
+        val daysInMonth = currentMonth.lengthOfMonth()
+        for (day in 1..daysInMonth) {
+            val date = currentMonth.atDay(day)
+            // Ensure we have some true values for preview
+            val hasDrinks = Random.nextDouble() < 0.3 // ~30% chance of having drinks
+            val drinkCount = if (hasDrinks) Random.nextInt(1, 5) else 0
+            data.add(CalendarDayData(date, hasDrinks, drinkCount))
+        }
+        currentMonth = currentMonth.plusMonths(1)
+    }
+    return data
+}
+
+val mockCalendarData = generateMockCalendarData(YearMonth.now().minusMonths(2), 3)
 
 @Composable
 fun CalendarScreen(
-    viewModel: CalendarViewModel = hiltViewModel()
+    // viewModel: CalendarViewModel = hiltViewModel() // ViewModel integration later
 ) {
-    val state by viewModel.state.collectAsState()
-    
-    CalendarScreenContent(
-        state = state,
-        onDeleteDrink = viewModel::deleteDrink
+    // val state by viewModel.state.collectAsState() // ViewModel integration later
+
+    // Use mock data for now
+    val calendarData = mockCalendarData.groupBy { YearMonth.from(it.date) }
+        .toSortedMap(compareByDescending { it }) // Sort months descending: newest first
+
+    CalendarScreenContent(calendarData = calendarData)
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
+    Scaffold {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            item {
+                DayOfWeekHeader()
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            calendarData.forEach { (month, days) ->
+                item {
+                    MonthHeader(month)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                // Group days by week, handling padding for the first week
+                val firstDayOfMonth = days.first().date
+                val dayOfWeekOffset = (firstDayOfMonth.dayOfWeek.value % 7) // Monday=1..Sunday=7 -> 0..6 ? Let's assume week starts Monday (1) -> Sunday (7)
+                                                                              // We want offset from Monday. Monday=1 -> offset 0, Sunday=7 -> offset 6
+                val startPaddingCells = firstDayOfMonth.dayOfWeek.value - 1 // Monday = 0 padding, Sunday = 6 padding
+
+                val allCells = mutableListOf<CalendarDayData?>()
+                repeat(startPaddingCells) { allCells.add(null) } // Add null placeholders for padding
+                allCells.addAll(days)
+
+                items(allCells.chunked(7)) { weekCells ->
+                    WeekRow(weekCells)
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+                item {
+                    Spacer(modifier = Modifier.height(24.dp)) // Increased space between months
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DayOfWeekHeader() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        // Assuming Monday is the start of the week
+        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        days.forEach { day ->
+            Text(
+                text = day,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.width(40.dp), // Match DayCell width
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
+    }
+}
+
+
+@Composable
+fun MonthHeader(month: YearMonth) {
+    val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
+    Text(
+        text = month.format(formatter),
+        style = MaterialTheme.typography.titleLarge, // Slightly larger title
+        modifier = Modifier.padding(vertical = 8.dp)
     )
 }
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Composable
-fun CalendarScreenContent(
-    state: CalendarScreenState,
-    onDeleteDrink: (Int) -> Unit = { _ -> }
-) {
-    Scaffold {
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (state.drinks.isEmpty()) {
-                Text(
-                    text = "No drinks recorded",
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            } else {
-                DrinksList(
-                    drinks = state.drinks,
-                    onDeleteDrink = onDeleteDrink
-                )
-            }
-        }
-    }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DrinksList(
-    drinks: List<DrinkItem>,
-    onDeleteDrink: (Int) -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+fun WeekRow(weekDays: List<CalendarDayData?>) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceAround
     ) {
-        item {
-            Text(
-                text = "Your Drinks History",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+        weekDays.forEach { dayData ->
+            if (dayData != null) {
+                DayCell(dayData)
+            } else {
+                Spacer(modifier = Modifier.size(40.dp)) // Placeholder for empty days
+            }
         }
-        
-        items(drinks, key = { it.id }) { drink ->
-            var show by remember { mutableStateOf(true) }
-            val dismissState = rememberSwipeToDismissBoxState(
-                confirmValueChange = { value ->
-                    if (value == SwipeToDismissBoxValue.EndToStart) {
-                        show = false
-                        true
-                    } else {
-                        false
-                    }
-                }
-            )
-            
-            LaunchedEffect(show) {
-                if (!show) {
-                    delay(300) // Wait for animation to finish
-                    onDeleteDrink(drink.id)
-                }
-            }
-            
-            AnimatedVisibility(
-                visible = show,
-                exit = shrinkHorizontally(animationSpec = tween(300)) + fadeOut()
-            ) {
-                SwipeToDismissBox(
-                    state = dismissState,
-                    backgroundContent = {
-                        DismissBackground(dismissState)
-                    },
-                    content = {
-                        DrinkCard(
-                            drink = drink,
-                            onDelete = {
-                                show = false
-                            }
-                        )
-                    },
-                    enableDismissFromStartToEnd = false,
-                    enableDismissFromEndToStart = true
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
+        // Add spacers if the week is not full (end of the month)
+        val remainingCells = 7 - weekDays.size
+        repeat(remainingCells) {
+            Spacer(modifier = Modifier.size(40.dp)) // Placeholder size
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DismissBackground(dismissState: SwipeToDismissBoxState) {
-    val color = when (dismissState.dismissDirection) {
-        SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
-        else -> Color.Transparent
-    }
-    
+fun DayCell(dayData: CalendarDayData) {
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(color)
-            .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.CenterEnd
+            .size(40.dp) // Consistent size
+            .background(
+                color = when {
+                    // Optional: Highlight today's date
+                    // dayData.date.isEqual(LocalDate.now()) -> MaterialTheme.colorScheme.tertiaryContainer
+                    dayData.hasDrinks -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) // More subtle background for empty days
+                },
+                shape = MaterialTheme.shapes.medium // Slightly rounded corners
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.Delete,
-            contentDescription = "Delete",
-            tint = MaterialTheme.colorScheme.onError
+        Text(
+            text = dayData.date.dayOfMonth.toString(),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = if (dayData.hasDrinks) FontWeight.Bold else FontWeight.Normal,
+            color = when {
+                // Optional: Highlight today's date text
+                // dayData.date.isEqual(LocalDate.now()) -> MaterialTheme.colorScheme.onTertiaryContainer
+                dayData.hasDrinks -> MaterialTheme.colorScheme.onPrimaryContainer
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
         )
+        // Optional: Add drink count indicator if needed later
+        // if (dayData.hasDrinks && dayData.drinkCount > 0) {
+        //     Box(modifier = Modifier.align(Alignment.BottomEnd).padding(2.dp)) {
+        //         Text(dayData.drinkCount.toString(), fontSize = 8.sp, color = MaterialTheme.colorScheme.secondary)
+        //     }
+        // }
     }
 }
 
-@Composable
-fun DrinkCard(
-    drink: DrinkItem,
-    onDelete: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocalDrink,
-                    contentDescription = "Drink",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "${drink.quantity}ml, ${drink.alcoholContent}% ABV",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .weight(1f)
-                )
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete drink",
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column {
-                    Text(
-                        text = "Date",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = drink.formattedDate,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Alcohol Units",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = String.format("%.2f", drink.alcoholUnits),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-    }
-}
+
+// --- Previews ---
 
 @Composable
 @Preview(
@@ -265,9 +207,7 @@ fun DrinkCard(
 )
 fun CalendarScreenPreviewLightTheme() {
     DrinkWiseTheme {
-        CalendarScreenContent(
-            state = dummyCalendarScreenState
-        )
+        CalendarScreen() // Use the main entry point for preview
     }
 }
 
@@ -280,12 +220,11 @@ fun CalendarScreenPreviewLightTheme() {
 )
 fun CalendarScreenPreviewDarkTheme() {
     DrinkWiseTheme(darkTheme = true) {
-        CalendarScreenContent(
-            state = dummyCalendarScreenState
-        )
+        CalendarScreen() // Use the main entry point for preview
     }
 }
 
+// Keep dummy data for potential future use or reference, but it's not used by the calendar view previews currently
 val dummyCalendarScreenState = CalendarScreenState(
     drinks = listOf(
         DrinkItem(
