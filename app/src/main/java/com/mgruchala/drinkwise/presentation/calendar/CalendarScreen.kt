@@ -59,7 +59,7 @@ fun generateMockCalendarData(startMonth: YearMonth, months: Int): List<CalendarD
     return data
 }
 
-val mockCalendarData = generateMockCalendarData(YearMonth.now().minusMonths(2), 3)
+val mockCalendarData = generateMockCalendarData(YearMonth.now().minusMonths(4), 5)
 
 @Composable
 fun CalendarScreen(
@@ -177,7 +177,7 @@ fun DayCell(dayData: CalendarDayData) {
     val isToday = dayData.date.isEqual(LocalDate.now())
     val backgroundModifier = if (isToday) {
         Modifier.background(
-            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.tertiaryContainer,
             shape = CircleShape
         )
     } else {
