@@ -20,4 +20,7 @@ interface DrinkDao {
 
     @Delete
     suspend fun deleteDrink(drink: DrinkEntity): Int
+    
+    @Query("SELECT COUNT(*) FROM drinks")
+    suspend fun getDrinkCount(): Int
 }

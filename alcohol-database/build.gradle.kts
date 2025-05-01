@@ -10,6 +10,10 @@ android {
     namespace = "com.mgruchala.alcohol_database"
     compileSdk = 34
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         minSdk = 30
 
