@@ -12,12 +12,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
 data class CalendarScreenState(
     val drinks: List<DrinkItem> = emptyList(),
+    val calendarData: Map<YearMonth, List<CalendarDayData>> = emptyMap(),
     val isLoading: Boolean = true
 )
 
@@ -30,6 +35,12 @@ data class DrinkItem(
     val alcoholUnits: Double
 )
 
+data class CalendarDayData(
+    val date: LocalDate,
+    val hasDrinks: Boolean,
+    val drinkCount: Int = 0
+)
+
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
     private val drinksRepository: DrinksRepository
@@ -39,8 +50,12 @@ class CalendarViewModel @Inject constructor(
 
     val state: StateFlow<CalendarScreenState> = drinksRepository.getAllDrinks()
         .map { drinks ->
+            val drinkItems = drinks.map { it.toDrinkItem() }
+            val calendarData = processCalendarData(drinks)
+            
             CalendarScreenState(
-                drinks = drinks.map { it.toDrinkItem() },
+                drinks = drinkItems,
+                calendarData = calendarData,
                 isLoading = false
             )
         }
@@ -49,6 +64,50 @@ class CalendarViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = CalendarScreenState()
         )
+
+    private fun processCalendarData(drinks: List<DrinkEntity>): Map<YearMonth, List<CalendarDayData>> {
+        // Group drinks by day
+        val drinksByDate = drinks.groupBy {
+            timestampToLocalDate(it.timestamp)
+        }
+        
+        // Get range of dates
+        val today = LocalDate.now()
+        val startDate = if (drinks.isEmpty()) {
+            today.minusMonths(1).withDayOfMonth(1)
+        } else {
+            drinks.minByOrNull { it.timestamp }?.let {
+                timestampToLocalDate(it.timestamp)
+            } ?: today.minusMonths(1).withDayOfMonth(1)
+        }
+        
+        // Create calendar days data
+        val calendarDays = mutableListOf<CalendarDayData>()
+        var currentDate = startDate
+        
+        // Generate all days between start date and today
+        while (!currentDate.isAfter(today)) {
+            val drinksForDay = drinksByDate[currentDate] ?: emptyList()
+            calendarDays.add(
+                CalendarDayData(
+                    date = currentDate,
+                    hasDrinks = drinksForDay.isNotEmpty(),
+                    drinkCount = drinksForDay.size
+                )
+            )
+            currentDate = currentDate.plusDays(1)
+        }
+        
+        // Group by month for display
+        return calendarDays.groupBy { YearMonth.from(it.date) }
+            .toSortedMap(compareByDescending { it })
+    }
+    
+    private fun timestampToLocalDate(timestamp: Long): LocalDate {
+        return Instant.ofEpochMilli(timestamp)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+    }
 
     private fun DrinkEntity.toDrinkItem(): DrinkItem {
         val date = Date(timestamp)

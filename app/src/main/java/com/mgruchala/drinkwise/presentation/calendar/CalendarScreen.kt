@@ -24,54 +24,35 @@ import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.random.Random
-
-data class CalendarDayData(
-    val date: LocalDate,
-    val hasDrinks: Boolean,
-    val drinkCount: Int = 0
-)
-
-fun generateMockCalendarData(startMonth: YearMonth, months: Int): List<CalendarDayData> {
-    val data = mutableListOf<CalendarDayData>()
-    var currentMonth = startMonth
-    repeat(months) {
-        val daysInMonth = currentMonth.lengthOfMonth()
-        for (day in 1..daysInMonth) {
-            val date = currentMonth.atDay(day)
-            val hasDrinks = Random.nextDouble() < 0.3 // ~30% chance of having drinks
-            val drinkCount = if (hasDrinks) Random.nextInt(1, 5) else 0
-            data.add(CalendarDayData(date, hasDrinks, drinkCount))
-        }
-        currentMonth = currentMonth.plusMonths(1)
-    }
-    return data
-}
-
-val mockCalendarData = generateMockCalendarData(YearMonth.now().minusMonths(4), 5)
 
 @Composable
 fun CalendarScreen(
-    // viewModel: CalendarViewModel = hiltViewModel() // ViewModel integration later
+    viewModel: CalendarViewModel = hiltViewModel()
 ) {
-    // val state by viewModel.state.collectAsState() // ViewModel integration later
+    val state by viewModel.state.collectAsState()
 
-    // Use mock data for now
-    val calendarData = mockCalendarData.groupBy { YearMonth.from(it.date) }
-        .toSortedMap(compareByDescending { it }) // Sort months descending: newest first
-
-    CalendarScreenContent(calendarData = calendarData)
+    if (state.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else {
+        CalendarScreenContent(calendarData = state.calendarData)
+    }
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -112,8 +93,6 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
     }
 }
 
-
-
 @Composable
 fun DayOfWeekHeader() {
     Row(
@@ -130,12 +109,11 @@ fun DayOfWeekHeader() {
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.width(40.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
         }
     }
 }
-
 
 @Composable
 fun MonthHeader(month: YearMonth) {
@@ -200,9 +178,7 @@ fun DayCell(dayData: CalendarDayData) {
         
         if (dayData.hasDrinks) {
             CircularProgressIndicator(
-                progress = {
-                    1.0f
-                },
+                progress = { 1.0f },
                 modifier = Modifier.matchParentSize(),
                 color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 2.5.dp,
@@ -221,7 +197,9 @@ fun DayCell(dayData: CalendarDayData) {
 )
 fun CalendarScreenPreviewLightTheme() {
     DrinkWiseTheme {
-        CalendarScreen()
+        // Use preview data for the preview
+        val previewData = createPreviewCalendarData()
+        CalendarScreenContent(previewData)
     }
 }
 
@@ -234,37 +212,26 @@ fun CalendarScreenPreviewLightTheme() {
 )
 fun CalendarScreenPreviewDarkTheme() {
     DrinkWiseTheme(darkTheme = true) {
-        CalendarScreen() // Use the main entry point for preview
+        // Use preview data for the preview
+        val previewData = createPreviewCalendarData()
+        CalendarScreenContent(previewData)
     }
 }
 
-// Keep dummy data for potential future use or reference, but it's not used by the calendar view previews currently
-val dummyCalendarScreenState = CalendarScreenState(
-    drinks = listOf(
-        DrinkItem(
-            id = 1,
-            quantity = 330,
-            alcoholContent = 5.0f,
-            alcoholUnits = 1.65,
-            formattedDate = "Jan 01, 2023 18:30",
-            timestamp = 1672596600000 // Jan 01, 2023 18:30
-        ),
-        DrinkItem(
-            id = 2,
-            quantity = 500,
-            alcoholContent = 4.5f,
-            alcoholUnits = 2.25,
-            formattedDate = "Jan 02, 2023 20:15",
-            timestamp = 1672689300000 // Jan 02, 2023 20:15
-        ),
-        DrinkItem(
-            id = 3,
-            quantity = 50,
-            alcoholContent = 40.0f,
-            alcoholUnits = 2.0,
-            formattedDate = "Jan 03, 2023 22:45",
-            timestamp = 1672783500000 // Jan 03, 2023 22:45
-        )
-    ),
-    isLoading = false
-)
+private fun createPreviewCalendarData(): Map<YearMonth, List<CalendarDayData>> {
+    val now = LocalDate.now()
+    val result = mutableMapOf<YearMonth, List<CalendarDayData>>()
+
+    for (i in 4 downTo 0) {
+        val month = YearMonth.from(now).minusMonths(i.toLong())
+        val days = (1..month.lengthOfMonth()).map { day ->
+            val date = month.atDay(day)
+            val hasDrinks = day % 3 == 0 // Every third day has drinks
+            val drinkCount = if (hasDrinks) (day % 5) + 1 else 0
+            CalendarDayData(date, hasDrinks, drinkCount)
+        }
+        result[month] = days
+    }
+
+    return result.toSortedMap(compareByDescending { it })
+}
