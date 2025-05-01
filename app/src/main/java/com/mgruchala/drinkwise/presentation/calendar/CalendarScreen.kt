@@ -66,7 +66,7 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
                 .fillMaxSize(),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            calendarData.forEach { (month, days) ->
+            calendarData.forEach { (month, originalDays) ->
                 item {
                     MonthHeader(month)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -74,12 +74,26 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                val firstDayOfMonth = days.first().date
+                // Create a map of existing days based on day of month
+                val daysMap = originalDays.associateBy { it.date.dayOfMonth }
+                
+                // Generate complete list of days for this month
+                val allDaysOfMonth = (1..month.lengthOfMonth()).map { dayOfMonth ->
+                    // Either use existing data or create an empty day
+                    daysMap[dayOfMonth] ?: CalendarDayData(
+                        date = month.atDay(dayOfMonth),
+                        hasDrinks = false,
+                        drinkCount = 0
+                    )
+                }
+                
+                // First day of the month
+                val firstDayOfMonth = month.atDay(1)
                 val startPaddingCells = firstDayOfMonth.dayOfWeek.value - 1 // Monday = 0 padding, Sunday = 6 padding
 
                 val allCells = mutableListOf<CalendarDayData?>()
                 repeat(startPaddingCells) { allCells.add(null) } // Add null placeholders for padding
-                allCells.addAll(days)
+                allCells.addAll(allDaysOfMonth)
 
                 items(allCells.chunked(7)) { weekCells ->
                     WeekRow(weekCells)
