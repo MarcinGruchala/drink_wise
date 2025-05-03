@@ -3,75 +3,64 @@ package com.mgruchala.drinkwise.presentation.calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mgruchala.alcohol_database.DrinkEntity
+import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
+import com.mgruchala.user_preferences.AlcoholLimitPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
 data class CalendarScreenState(
-    val drinks: List<DrinkItem> = emptyList(),
     val calendarData: Map<YearMonth, List<CalendarDayData>> = emptyMap(),
     val isLoading: Boolean = true
 )
 
-data class DrinkItem(
-    val id: Int,
-    val quantity: Int,
-    val alcoholContent: Float,
-    val timestamp: Long,
-    val formattedDate: String,
-    val alcoholUnits: Double
-)
-
 data class CalendarDayData(
     val date: LocalDate,
-    val hasDrinks: Boolean,
-    val drinkCount: Int = 0
+    val alcoholUnitLevel: AlcoholUnitLevel?
 )
 
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
-    private val drinksRepository: DrinksRepository
+    private val drinksRepository: DrinksRepository,
+    private val alcoholLimitPreferencesRepository: AlcoholLimitPreferencesRepository
 ) : ViewModel() {
 
     private val dateFormatter = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+    private val drinksFlow = drinksRepository.getAllDrinks()
+    private val userPreferencesFlow = alcoholLimitPreferencesRepository.userPreferencesFlow
 
-    val state: StateFlow<CalendarScreenState> = drinksRepository.getAllDrinks()
-        .map { drinks ->
-            val drinkItems = drinks.map { it.toDrinkItem() }
-            val calendarData = processCalendarData(drinks)
-            
+    val state: StateFlow<CalendarScreenState> =
+        combine(drinksFlow, userPreferencesFlow) { drinks, userPreferences ->
+            val calendarData = processCalendarData(
+                drinks = drinks,
+                dailyAlcoholLimit = userPreferences.dailyAlcoholUnitLimit
+            )
             CalendarScreenState(
-                drinks = drinkItems,
                 calendarData = calendarData,
                 isLoading = false
             )
-        }
-        .stateIn(
+        }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = CalendarScreenState()
         )
 
-    private fun processCalendarData(drinks: List<DrinkEntity>): Map<YearMonth, List<CalendarDayData>> {
-        // Group drinks by day
+    private fun processCalendarData(drinks: List<DrinkEntity>, dailyAlcoholLimit: Float): Map<YearMonth, List<CalendarDayData>> {
         val drinksByDate = drinks.groupBy {
             timestampToLocalDate(it.timestamp)
         }
-        
-        // Get range of dates
+
         val today = LocalDate.now()
         val startDate = if (drinks.isEmpty()) {
             today.minusMonths(1).withDayOfMonth(1)
@@ -80,57 +69,35 @@ class CalendarViewModel @Inject constructor(
                 timestampToLocalDate(it.timestamp)
             } ?: today.minusMonths(1).withDayOfMonth(1)
         }
-        
-        // Create calendar days data
+
         val calendarDays = mutableListOf<CalendarDayData>()
         var currentDate = startDate
-        
-        // Generate all days between start date and today
+
         while (!currentDate.isAfter(today)) {
             val drinksForDay = drinksByDate[currentDate] ?: emptyList()
+            val dayAlcoholUnits = drinksForDay.sumOf {
+                calculateAlcoholUnits(volumeMl = it.quantity, abv = it.alcoholContent)
+            }
+
             calendarDays.add(
                 CalendarDayData(
                     date = currentDate,
-                    hasDrinks = drinksForDay.isNotEmpty(),
-                    drinkCount = drinksForDay.size
+                    alcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(
+                        dayAlcoholUnits.toFloat(),
+                        dailyAlcoholLimit
+                    ),
                 )
             )
             currentDate = currentDate.plusDays(1)
         }
-        
-        // Group by month for display
+
         return calendarDays.groupBy { YearMonth.from(it.date) }
             .toSortedMap(compareByDescending { it })
     }
-    
+
     private fun timestampToLocalDate(timestamp: Long): LocalDate {
         return Instant.ofEpochMilli(timestamp)
             .atZone(ZoneId.systemDefault())
             .toLocalDate()
-    }
-
-    private fun DrinkEntity.toDrinkItem(): DrinkItem {
-        val date = Date(timestamp)
-        return DrinkItem(
-            id = uid,
-            quantity = quantity,
-            alcoholContent = alcoholContent,
-            timestamp = timestamp,
-            formattedDate = dateFormatter.format(date),
-            alcoholUnits = calculateAlcoholUnits(quantity, alcoholContent)
-        )
-    }
-    
-    fun deleteDrink(drinkId: Int) {
-        viewModelScope.launch {
-            val drinkToDelete = state.value.drinks.find { it.id == drinkId } ?: return@launch
-            val drinkEntity = DrinkEntity(
-                uid = drinkToDelete.id,
-                quantity = drinkToDelete.quantity,
-                alcoholContent = drinkToDelete.alcoholContent,
-                timestamp = drinkToDelete.timestamp
-            )
-            drinksRepository.deleteDrink(drinkEntity)
-        }
     }
 } 

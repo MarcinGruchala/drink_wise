@@ -18,9 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +32,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
+import com.mgruchala.drinkwise.presentation.common.AlcoholUnitLevelProgressIndicator
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 import java.time.LocalDate
 import java.time.YearMonth
@@ -56,7 +56,6 @@ fun CalendarScreen(
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
     Scaffold {
@@ -74,25 +73,19 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Create a map of existing days based on day of month
                 val daysMap = originalDays.associateBy { it.date.dayOfMonth }
-                
-                // Generate complete list of days for this month
+
                 val allDaysOfMonth = (1..month.lengthOfMonth()).map { dayOfMonth ->
-                    // Either use existing data or create an empty day
                     daysMap[dayOfMonth] ?: CalendarDayData(
                         date = month.atDay(dayOfMonth),
-                        hasDrinks = false,
-                        drinkCount = 0
+                        alcoholUnitLevel = null
                     )
                 }
-                
-                // First day of the month
                 val firstDayOfMonth = month.atDay(1)
-                val startPaddingCells = firstDayOfMonth.dayOfWeek.value - 1 // Monday = 0 padding, Sunday = 6 padding
+                val startPaddingCells = firstDayOfMonth.dayOfWeek.value - 1
 
                 val allCells = mutableListOf<CalendarDayData?>()
-                repeat(startPaddingCells) { allCells.add(null) } // Add null placeholders for padding
+                repeat(startPaddingCells) { allCells.add(null) }
                 allCells.addAll(allDaysOfMonth)
 
                 items(allCells.chunked(7)) { weekCells ->
@@ -100,7 +93,7 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
                     Spacer(modifier = Modifier.height(4.dp))
                 }
                 item {
-                    Spacer(modifier = Modifier.height(24.dp)) // Increased space between months
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }
@@ -134,7 +127,7 @@ fun MonthHeader(month: YearMonth) {
     val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
     Text(
         text = month.format(formatter),
-        style = MaterialTheme.typography.titleLarge, // Slightly larger title
+        style = MaterialTheme.typography.titleLarge,
         modifier = Modifier.padding(vertical = 8.dp)
     )
 }
@@ -185,18 +178,16 @@ fun DayCell(dayData: CalendarDayData) {
         Text(
             text = dayData.date.dayOfMonth.toString(),
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal, // Make today's text bold
-            color = if (isToday) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant, // Adjust text color for today's background
+            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+            color = if (isToday) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1
         )
-        
-        if (dayData.hasDrinks) {
-            CircularProgressIndicator(
-                progress = { 1.0f },
+
+        dayData.alcoholUnitLevel?.let {
+            AlcoholUnitLevelProgressIndicator(
                 modifier = Modifier.matchParentSize(),
-                color = MaterialTheme.colorScheme.primary,
+                alcoholUnitLevel = it,
                 strokeWidth = 2.5.dp,
-                trackColor = ProgressIndicatorDefaults.circularIndeterminateTrackColor,
             )
         }
     }
@@ -211,7 +202,6 @@ fun DayCell(dayData: CalendarDayData) {
 )
 fun CalendarScreenPreviewLightTheme() {
     DrinkWiseTheme {
-        // Use preview data for the preview
         val previewData = createPreviewCalendarData()
         CalendarScreenContent(previewData)
     }
@@ -240,9 +230,7 @@ private fun createPreviewCalendarData(): Map<YearMonth, List<CalendarDayData>> {
         val month = YearMonth.from(now).minusMonths(i.toLong())
         val days = (1..month.lengthOfMonth()).map { day ->
             val date = month.atDay(day)
-            val hasDrinks = day % 3 == 0 // Every third day has drinks
-            val drinkCount = if (hasDrinks) (day % 5) + 1 else 0
-            CalendarDayData(date, hasDrinks, drinkCount)
+            CalendarDayData(date, AlcoholUnitLevel.fromUnitCount(1f, limit = 3f))
         }
         result[month] = days
     }

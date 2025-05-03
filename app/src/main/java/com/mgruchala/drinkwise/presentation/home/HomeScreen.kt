@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,9 +30,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelAlarming
-import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelHigh
-import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelLow
+import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
+import com.mgruchala.drinkwise.presentation.common.AlcoholUnitLevelProgressIndicator
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
@@ -133,30 +131,12 @@ fun DrinksSummaryCard(
                     style = MaterialTheme.typography.titleLarge
                 )
             }
-            DrinkSummaryCardCircularProgressIndicator(
-                alcoholUnitLevel = alcoholUnitLevel
+            AlcoholUnitLevelProgressIndicator(
+                modifier= Modifier.size(54.dp),
+                alcoholUnitLevel = alcoholUnitLevel,
             )
         }
     }
-}
-
-@Composable
-fun DrinkSummaryCardCircularProgressIndicator(
-    alcoholUnitLevel: AlcoholUnitLevel
-) {
-    val color = when (alcoholUnitLevel) {
-        is AlcoholUnitLevel.Low -> AlcoholUnitLevelLow
-        is AlcoholUnitLevel.Alarming -> AlcoholUnitLevelAlarming
-        is AlcoholUnitLevel.High -> AlcoholUnitLevelHigh
-    }
-
-    CircularProgressIndicator(
-        progress = { alcoholUnitLevel.unitCount / alcoholUnitLevel.limit },
-        modifier = Modifier.size(54.dp),
-        color = color,
-        trackColor = MaterialTheme.colorScheme.inverseSurface,
-        strokeWidth = 5.dp,
-    )
 }
 
 @Composable
