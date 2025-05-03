@@ -1,5 +1,6 @@
 package com.mgruchala.alcohol_database
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -14,6 +15,9 @@ interface DrinkDao {
     
     @Query("SELECT * FROM drinks ORDER BY timestamp DESC")
     fun getAllDrinks(): Flow<List<DrinkEntity>>
+
+    @Query("SELECT * FROM drinks ORDER BY timestamp DESC")
+    fun getPaginatedDrinks(): PagingSource<Int, DrinkEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDrinks(drinks: List<DrinkEntity>)
