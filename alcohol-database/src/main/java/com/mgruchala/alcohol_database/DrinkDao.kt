@@ -16,8 +16,8 @@ interface DrinkDao {
     @Query("SELECT * FROM drinks ORDER BY timestamp DESC")
     fun getAllDrinks(): Flow<List<DrinkEntity>>
 
-    @Query("SELECT * FROM drinks ORDER BY timestamp DESC")
-    fun getPaginatedDrinks(): PagingSource<Int, DrinkEntity>
+    @Query("SELECT * FROM drinks WHERE timestamp >= :startDate AND timestamp <= :endDate ORDER BY timestamp DESC")
+    fun getPaginatedDrinksByDateRange(startDate: Long, endDate: Long): PagingSource<Int, DrinkEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDrinks(drinks: List<DrinkEntity>)

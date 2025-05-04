@@ -1,5 +1,6 @@
 package com.mgruchala.drinkwise.domain
 
+import androidx.paging.PagingData
 import com.mgruchala.alcohol_database.DrinkEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -19,6 +20,12 @@ interface DrinksRepository {
      * Fetches all drinks consumed within the past 30 days, as a Flow.
      */
     fun getDrinksLast30Days(): Flow<List<DrinkEntity>>
+
+    fun getDrinksByDateRangePaginated(
+        startTimestamp: Long,
+        endTimestamp: Long,
+        pageSize: Int = 40
+    ): Flow<PagingData<DrinkEntity>>
 
     /**
      * Fetches all drinks in the database, as a Flow.

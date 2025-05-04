@@ -1,5 +1,8 @@
 package com.mgruchala.drinkwise.domain
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.mgruchala.alcohol_database.DrinkDao
 import com.mgruchala.alcohol_database.DrinkEntity
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +24,21 @@ class DrinksRepositoryImpl(
     override fun getDrinksLast30Days(): Flow<List<DrinkEntity>> {
         val cutoff = System.currentTimeMillis() - THIRTY_DAYS_IN_MILLIS
         return drinkDao.getDrinksSince(cutoff)
+    }
+
+    override fun getDrinksByDateRangePaginated(
+        startTimestamp: Long,
+        endTimestamp: Long,
+        pageSize: Int
+    ): Flow<PagingData<DrinkEntity>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = pageSize,
+                enablePlaceholders = false
+            )
+        ) {
+            drinkDao.getPaginatedDrinksByDateRange(startTimestamp, endTimestamp)
+        }.flow
     }
     
     override fun getAllDrinks(): Flow<List<DrinkEntity>> {
