@@ -1,6 +1,5 @@
 package com.mgruchala.drinkwise.domain
 
-import androidx.paging.PagingData
 import com.mgruchala.alcohol_database.DrinkEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -21,12 +20,6 @@ interface DrinksRepository {
      */
     fun getDrinksLast30Days(): Flow<List<DrinkEntity>>
 
-    fun getDrinksByDateRangePaginated(
-        startTimestamp: Long,
-        endTimestamp: Long,
-        pageSize: Int = 40
-    ): Flow<PagingData<DrinkEntity>>
-
     /**
      * Fetches all drinks in the database, as a Flow.
      */
@@ -41,5 +34,12 @@ interface DrinksRepository {
      * Deletes a drink from the database.
      */
     suspend fun deleteDrink(drink: DrinkEntity): Int
+
+    /**
+     * Fetches all drinks consumed within a specific month, as a Flow.
+     * @param year The year (e.g., 2023)
+     * @param month The month (1-12)
+     */
+    fun getDrinksForMonth(year: Int, month: Int): Flow<List<DrinkEntity>>
 }
 
