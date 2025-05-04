@@ -2,28 +2,34 @@ package com.mgruchala.drinkwise.presentation.calendar
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.common.AlcoholUnitLevelProgressIndicator
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -58,44 +65,123 @@ fun CalendarScreen(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
+    val sortedMonths = calendarData.keys.sortedDescending()
+    val initialPage = 0
+    val pagerState = rememberPagerState(initialPage = initialPage) { sortedMonths.size }
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .padding(horizontal = 8.dp)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 16.dp)
+                .fillMaxSize()
         ) {
-            calendarData.forEach { (month, originalDays) ->
-                item {
-                    MonthHeader(month)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    DayOfWeekHeader()
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                val daysMap = originalDays.associateBy { it.date.dayOfMonth }
-
-                val allDaysOfMonth = (1..month.lengthOfMonth()).map { dayOfMonth ->
-                    daysMap[dayOfMonth] ?: CalendarDayData(
-                        date = month.atDay(dayOfMonth),
-                        alcoholUnitLevel = null
-                    )
-                }
-                val firstDayOfMonth = month.atDay(1)
-                val startPaddingCells = firstDayOfMonth.dayOfWeek.value - 1
-
-                val allCells = mutableListOf<CalendarDayData?>()
-                repeat(startPaddingCells) { allCells.add(null) }
-                allCells.addAll(allDaysOfMonth)
-
-                items(allCells.chunked(7)) { weekCells ->
-                    WeekRow(weekCells)
-                    Spacer(modifier = Modifier.height(4.dp))
-                }
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
+            // Month navigation header
+            if (sortedMonths.isNotEmpty()) {
+                MonthNavigationHeader(
+                    currentMonth = sortedMonths[pagerState.currentPage],
+                    canGoForward = pagerState.currentPage > 0,
+                    canGoBack = pagerState.currentPage < sortedMonths.size - 1,
+                    onNextMonth = {
+                        coroutineScope.launch {
+                            if (pagerState.currentPage > 0) {
+                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                            }
+                        }
+                    },
+                    onPreviousMonth = {
+                        coroutineScope.launch {
+                            if (pagerState.currentPage < sortedMonths.size - 1) {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
+                        }
+                    }
+                )
             }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            DayOfWeekHeader()
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                val month = sortedMonths[page]
+                val days = calendarData[month] ?: emptyList()
+                MonthCalendar(month, days)
+            }
+        }
+    }
+}
+
+@Composable
+fun MonthNavigationHeader(
+    currentMonth: YearMonth,
+    canGoBack: Boolean,
+    canGoForward: Boolean,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit
+) {
+    val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
+    
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = onPreviousMonth,
+            enabled = canGoBack
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Previous Month"
+            )
+        }
+        
+        Text(
+            text = currentMonth.format(formatter),
+            style = MaterialTheme.typography.titleLarge
+        )
+        
+        IconButton(
+            onClick = onNextMonth,
+            enabled = canGoForward
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription = "Next Month"
+            )
+        }
+    }
+}
+
+@Composable
+fun MonthCalendar(month: YearMonth, originalDays: List<CalendarDayData>) {
+    val daysMap = originalDays.associateBy { it.date.dayOfMonth }
+
+    val allDaysOfMonth = (1..month.lengthOfMonth()).map { dayOfMonth ->
+        daysMap[dayOfMonth] ?: CalendarDayData(
+            date = month.atDay(dayOfMonth),
+            alcoholUnitLevel = null
+        )
+    }
+    val firstDayOfMonth = month.atDay(1)
+    val startPaddingCells = firstDayOfMonth.dayOfWeek.value - 1
+
+    val allCells = mutableListOf<CalendarDayData?>()
+    repeat(startPaddingCells) { allCells.add(null) }
+    allCells.addAll(allDaysOfMonth)
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        allCells.chunked(7).forEach { weekCells ->
+            WeekRow(weekCells)
         }
     }
 }
@@ -103,19 +189,17 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
 @Composable
 fun DayOfWeekHeader() {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceAround
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         days.forEach { day ->
             Text(
                 text = day,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.width(40.dp),
+                modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
         }
@@ -123,38 +207,29 @@ fun DayOfWeekHeader() {
 }
 
 @Composable
-fun MonthHeader(month: YearMonth) {
-    val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
-    Text(
-        text = month.format(formatter),
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(vertical = 8.dp)
-    )
-}
-
-@Composable
 fun WeekRow(weekDays: List<CalendarDayData?>) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceAround
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        weekDays.forEach { dayData ->
-            if (dayData != null) {
-                DayCell(dayData)
-            } else {
-                EmptyDayPlaceholder()
+        repeat(7) { index ->
+            val dayData = if (index < weekDays.size) weekDays[index] else null
+            Box(modifier = Modifier.weight(1f)) {
+                if (dayData != null) {
+                    DayCell(dayData)
+                } else {
+                    EmptyDayPlaceholder()
+                }
             }
-        }
-        val remainingCells = 7 - weekDays.size
-        repeat(remainingCells) {
-            EmptyDayPlaceholder()
         }
     }
 }
 
 @Composable
 fun EmptyDayPlaceholder() {
-    Spacer(modifier = Modifier.size(40.dp))
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .aspectRatio(1f))
 }
 
 @Composable
@@ -171,28 +246,30 @@ fun DayCell(dayData: CalendarDayData) {
 
     Box(
         modifier = Modifier
-            .size(40.dp)
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .padding(2.dp)
             .then(backgroundModifier),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = dayData.date.dayOfMonth.toString(),
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyLarge,
             fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-            color = if (isToday) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1
+            color = if (isToday) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         dayData.alcoholUnitLevel?.let {
             AlcoholUnitLevelProgressIndicator(
                 modifier = Modifier.matchParentSize(),
                 alcoholUnitLevel = it,
-                strokeWidth = 2.5.dp,
+                strokeWidth = 3.dp,
             )
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview(
     showBackground = true,
@@ -207,6 +284,7 @@ fun CalendarScreenPreviewLightTheme() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview(
     showBackground = true,
@@ -216,7 +294,6 @@ fun CalendarScreenPreviewLightTheme() {
 )
 fun CalendarScreenPreviewDarkTheme() {
     DrinkWiseTheme(darkTheme = true) {
-        // Use preview data for the preview
         val previewData = createPreviewCalendarData()
         CalendarScreenContent(previewData)
     }
