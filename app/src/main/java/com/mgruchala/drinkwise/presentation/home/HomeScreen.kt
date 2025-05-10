@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
+import com.mgruchala.user_preferences.summary_period.CalculationMode
 
 @Composable
 fun HomeScreen(

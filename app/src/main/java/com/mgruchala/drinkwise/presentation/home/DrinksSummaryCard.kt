@@ -34,11 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.common.AlcoholUnitLevelProgressIndicator
-
-enum class CalculationMode {
-    SINCE_START_OF_PERIOD,
-    ROLLING_PERIOD
-}
+import com.mgruchala.user_preferences.summary_period.CalculationMode
 
 enum class DrinkSummaryCardPeriod {
     DAILY,
