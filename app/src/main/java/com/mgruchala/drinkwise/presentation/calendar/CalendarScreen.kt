@@ -18,6 +18,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.CircularProgressIndicator
@@ -76,7 +78,6 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
                 .padding(horizontal = 8.dp)
                 .fillMaxSize()
         ) {
-            // Month navigation header
             if (sortedMonths.isNotEmpty()) {
                 MonthNavigationHeader(
                     currentMonth = sortedMonths[pagerState.currentPage],
@@ -98,11 +99,11 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
                     }
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
             DayOfWeekHeader()
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
@@ -124,7 +125,7 @@ fun MonthNavigationHeader(
     onNextMonth: () -> Unit
 ) {
     val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -133,29 +134,31 @@ fun MonthNavigationHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
-            onClick = onPreviousMonth,
-            enabled = canGoBack
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Previous Month"
-            )
-        }
-        
-        Text(
-            text = currentMonth.format(formatter),
-            style = MaterialTheme.typography.titleLarge
-        )
-        
-        IconButton(
             onClick = onNextMonth,
             enabled = canGoForward
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Next Month"
             )
         }
+
+        Text(
+            text = currentMonth.format(formatter)
+                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        IconButton(
+            onClick = onPreviousMonth,
+            enabled = canGoBack
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = "Previous Month"
+            )
+        }
+
     }
 }
 
@@ -227,9 +230,11 @@ fun WeekRow(weekDays: List<CalendarDayData?>) {
 
 @Composable
 fun EmptyDayPlaceholder() {
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .aspectRatio(1f))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+    )
 }
 
 @Composable

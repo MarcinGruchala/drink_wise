@@ -12,12 +12,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
-import java.util.Locale
 import javax.inject.Inject
 
 data class CalendarScreenState(
@@ -32,11 +30,10 @@ data class CalendarDayData(
 
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
-    private val drinksRepository: DrinksRepository,
-    private val alcoholLimitPreferencesRepository: AlcoholLimitPreferencesRepository
+    drinksRepository: DrinksRepository,
+    alcoholLimitPreferencesRepository: AlcoholLimitPreferencesRepository
 ) : ViewModel() {
 
-    private val dateFormatter = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
     private val drinksFlow = drinksRepository.getAllDrinks()
     private val userPreferencesFlow = alcoholLimitPreferencesRepository.userPreferencesFlow
 
