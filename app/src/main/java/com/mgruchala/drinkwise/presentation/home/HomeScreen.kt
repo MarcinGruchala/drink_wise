@@ -34,7 +34,10 @@ fun HomeScreen(
     val state by viewModel.state.collectAsState()
     HomeScreenContent(
         state = state,
-        registerNewDrinks = viewModel::registerNewDrinks
+        registerNewDrinks = viewModel::registerNewDrinks,
+        updateDailySummaryPeriod = viewModel::updateDailySummaryCalculationModePreferences,
+        updateWeeklySummaryPeriod = viewModel::updateWeeklySummaryCalculationModePreferences,
+        updateMonthlySummaryPeriod = viewModel::updateMonthlySummaryCalculationModePreferences
     )
 }
 
@@ -42,7 +45,10 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContent(
     state: HomeScreenState,
-    registerNewDrinks: (Int, Float, Int) -> Unit = { _, _, _ -> }
+    registerNewDrinks: (Int, Float, Int) -> Unit = { _, _, _ -> },
+    updateDailySummaryPeriod: (CalculationMode) -> Unit = {},
+    updateMonthlySummaryPeriod: (CalculationMode) -> Unit = {},
+    updateWeeklySummaryPeriod: (CalculationMode) -> Unit = {},
 ) {
     val openAddDrinkDialog = rememberSaveable { mutableStateOf(false) }
 
@@ -78,17 +84,26 @@ fun HomeScreenContent(
                 DrinksSummaryCard(
                     period = DrinkSummaryCardPeriod.DAILY,
                     alcoholUnitLevel = state.todayAlcoholUnitLevel,
-                    currentMode = CalculationMode.SINCE_START_OF_PERIOD,
+                    currentMode = state.dailySummaryCalculationMode,
+                    onModeChange = { calculationMode ->
+                        updateDailySummaryPeriod(calculationMode)
+                    }
                 )
                 DrinksSummaryCard(
                     period = DrinkSummaryCardPeriod.WEEKLY,
                     alcoholUnitLevel = state.weekAlcoholUnitLevel,
-                    currentMode = CalculationMode.SINCE_START_OF_PERIOD,
+                    currentMode = state.weeklySummaryCalculationMode,
+                    onModeChange = { calculationMode ->
+                        updateWeeklySummaryPeriod(calculationMode)
+                    }
                 )
                 DrinksSummaryCard(
                     period = DrinkSummaryCardPeriod.MONTHLY,
                     alcoholUnitLevel = state.monthAlcoholUnitLevel,
-                    currentMode = CalculationMode.SINCE_START_OF_PERIOD,
+                    currentMode = state.monthlySummaryCalculationMode,
+                    onModeChange = { calculationMode ->
+                        updateMonthlySummaryPeriod(calculationMode)
+                    }
                 )
             }
         }
@@ -129,4 +144,7 @@ val dummyState = HomeScreenState(
     todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(6f, 4f),
     weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(12f, 14f),
     monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(15f, 30f),
+    dailySummaryCalculationMode = CalculationMode.ROLLING_PERIOD,
+    weeklySummaryCalculationMode = CalculationMode.ROLLING_PERIOD,
+    monthlySummaryCalculationMode = CalculationMode.ROLLING_PERIOD
 )
