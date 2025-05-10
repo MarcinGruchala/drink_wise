@@ -1,238 +1,321 @@
 package com.mgruchala.drinkwise.presentation.calendar
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
+import android.annotation.SuppressLint
+import android.content.res.Configuration
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.LocalDrink
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxState
-import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.delay
+import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
+import com.mgruchala.drinkwise.presentation.common.AlcoholUnitLevelProgressIndicator
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun CalendarScreen(
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else if (state.drinks.isEmpty()) {
-            Text(
-                text = "No drinks recorded",
-                modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.bodyLarge
-            )
-        } else {
-            DrinksList(
-                drinks = state.drinks,
-                onDeleteDrink = viewModel::deleteDrink
-            )
+
+    if (state.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
         }
+    } else {
+        CalendarScreenContent(calendarData = state.calendarData)
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun DrinksList(
-    drinks: List<DrinkItem>,
-    onDeleteDrink: (Int) -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        item {
-            Text(
-                text = "Your Drinks History",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-        }
-        
-        items(drinks, key = { it.id }) { drink ->
-            var show by remember { mutableStateOf(true) }
-            val dismissState = rememberSwipeToDismissBoxState(
-                confirmValueChange = { value ->
-                    if (value == SwipeToDismissBoxValue.EndToStart) {
-                        show = false
-                        true
-                    } else {
-                        false
-                    }
-                }
-            )
-            
-            LaunchedEffect(show) {
-                if (!show) {
-                    delay(300) // Wait for animation to finish
-                    onDeleteDrink(drink.id)
-                }
-            }
-            
-            AnimatedVisibility(
-                visible = show,
-                exit = shrinkHorizontally(animationSpec = tween(300)) + fadeOut()
-            ) {
-                SwipeToDismissBox(
-                    state = dismissState,
-                    backgroundContent = {
-                        DismissBackground(dismissState)
-                    },
-                    content = {
-                        DrinkCard(
-                            drink = drink,
-                            onDelete = {
-                                show = false
+fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
+    val sortedMonths = calendarData.keys.sortedDescending()
+    val initialPage = 0
+    val pagerState = rememberPagerState(initialPage = initialPage) { sortedMonths.size }
+    val coroutineScope = rememberCoroutineScope()
+
+    Scaffold {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .fillMaxSize()
+        ) {
+            if (sortedMonths.isNotEmpty()) {
+                MonthNavigationHeader(
+                    currentMonth = sortedMonths[pagerState.currentPage],
+                    canGoForward = pagerState.currentPage > 0,
+                    canGoBack = pagerState.currentPage < sortedMonths.size - 1,
+                    onNextMonth = {
+                        coroutineScope.launch {
+                            if (pagerState.currentPage > 0) {
+                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
                             }
-                        )
+                        }
                     },
-                    enableDismissFromStartToEnd = false,
-                    enableDismissFromEndToStart = true
+                    onPreviousMonth = {
+                        coroutineScope.launch {
+                            if (pagerState.currentPage < sortedMonths.size - 1) {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
+                        }
+                    }
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
+            DayOfWeekHeader()
+            Spacer(modifier = Modifier.height(8.dp))
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                val month = sortedMonths[page]
+                val days = calendarData[month] ?: emptyList()
+                MonthCalendar(month, days)
+            }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DismissBackground(dismissState: SwipeToDismissBoxState) {
-    val color = when (dismissState.dismissDirection) {
-        SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
-        else -> Color.Transparent
+fun MonthNavigationHeader(
+    currentMonth: YearMonth,
+    canGoBack: Boolean,
+    canGoForward: Boolean,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit
+) {
+    val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = onNextMonth,
+            enabled = canGoForward
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Next Month"
+            )
+        }
+
+        Text(
+            text = currentMonth.format(formatter)
+                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        IconButton(
+            onClick = onPreviousMonth,
+            enabled = canGoBack
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = "Previous Month"
+            )
+        }
+
     }
-    
+}
+
+@Composable
+fun MonthCalendar(month: YearMonth, originalDays: List<CalendarDayData>) {
+    val daysMap = originalDays.associateBy { it.date.dayOfMonth }
+
+    val allDaysOfMonth = (1..month.lengthOfMonth()).map { dayOfMonth ->
+        daysMap[dayOfMonth] ?: CalendarDayData(
+            date = month.atDay(dayOfMonth),
+            alcoholUnitLevel = null
+        )
+    }
+    val firstDayOfMonth = month.atDay(1)
+    val startPaddingCells = firstDayOfMonth.dayOfWeek.value - 1
+
+    val allCells = mutableListOf<CalendarDayData?>()
+    repeat(startPaddingCells) { allCells.add(null) }
+    allCells.addAll(allDaysOfMonth)
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        allCells.chunked(7).forEach { weekCells ->
+            WeekRow(weekCells)
+        }
+    }
+}
+
+@Composable
+fun DayOfWeekHeader() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        days.forEach { day ->
+            Text(
+                text = day,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun WeekRow(weekDays: List<CalendarDayData?>) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        repeat(7) { index ->
+            val dayData = if (index < weekDays.size) weekDays[index] else null
+            Box(modifier = Modifier.weight(1f)) {
+                if (dayData != null) {
+                    DayCell(dayData)
+                } else {
+                    EmptyDayPlaceholder()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EmptyDayPlaceholder() {
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(color)
-            .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.CenterEnd
-    ) {
-        Icon(
-            imageVector = Icons.Default.Delete,
-            contentDescription = "Delete",
-            tint = MaterialTheme.colorScheme.onError
-        )
-    }
+            .fillMaxWidth()
+            .aspectRatio(1f)
+    )
 }
 
 @Composable
-fun DrinkCard(
-    drink: DrinkItem,
-    onDelete: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+fun DayCell(dayData: CalendarDayData) {
+    val isToday = dayData.date.isEqual(LocalDate.now())
+    val backgroundModifier = if (isToday) {
+        Modifier.background(
+            color = MaterialTheme.colorScheme.tertiaryContainer,
+            shape = CircleShape
         )
+    } else {
+        Modifier
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .padding(2.dp)
+            .then(backgroundModifier),
+        contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocalDrink,
-                    contentDescription = "Drink",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "${drink.quantity}ml, ${drink.alcoholContent}% ABV",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .weight(1f)
-                )
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete drink",
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column {
-                    Text(
-                        text = "Date",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = drink.formattedDate,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Alcohol Units",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = String.format("%.2f", drink.alcoholUnits),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+        Text(
+            text = dayData.date.dayOfMonth.toString(),
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+            color = if (isToday) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        dayData.alcoholUnitLevel?.let {
+            AlcoholUnitLevelProgressIndicator(
+                modifier = Modifier.matchParentSize(),
+                alcoholUnitLevel = it,
+                strokeWidth = 3.dp,
+            )
         }
     }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+fun CalendarScreenPreviewLightTheme() {
+    DrinkWiseTheme {
+        val previewData = createPreviewCalendarData()
+        CalendarScreenContent(previewData)
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+fun CalendarScreenPreviewDarkTheme() {
+    DrinkWiseTheme(darkTheme = true) {
+        val previewData = createPreviewCalendarData()
+        CalendarScreenContent(previewData)
+    }
+}
+
+private fun createPreviewCalendarData(): Map<YearMonth, List<CalendarDayData>> {
+    val now = LocalDate.now()
+    val result = mutableMapOf<YearMonth, List<CalendarDayData>>()
+
+    for (i in 4 downTo 0) {
+        val month = YearMonth.from(now).minusMonths(i.toLong())
+        val days = (1..month.lengthOfMonth()).map { day ->
+            val date = month.atDay(day)
+            CalendarDayData(date, AlcoholUnitLevel.fromUnitCount(1f, limit = 3f))
+        }
+        result[month] = days
+    }
+
+    return result.toSortedMap(compareByDescending { it })
 }

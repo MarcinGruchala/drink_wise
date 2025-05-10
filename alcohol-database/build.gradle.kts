@@ -10,6 +10,10 @@ android {
     namespace = "com.mgruchala.alcohol_database"
     compileSdk = 34
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         minSdk = 30
 
@@ -36,6 +40,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     ksp(libs.androidx.room.compiler)

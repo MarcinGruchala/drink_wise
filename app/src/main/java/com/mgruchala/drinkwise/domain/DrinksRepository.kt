@@ -34,5 +34,12 @@ interface DrinksRepository {
      * Deletes a drink from the database.
      */
     suspend fun deleteDrink(drink: DrinkEntity): Int
+
+    /**
+     * Fetches all drinks consumed within a specific month, as a Flow.
+     * @param year The year (e.g., 2023)
+     * @param month The month (1-12)
+     */
+    fun getDrinksForMonth(year: Int, month: Int): Flow<List<DrinkEntity>>
 }
 
