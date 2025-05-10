@@ -2,7 +2,7 @@ package com.mgruchala.drinkwise.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mgruchala.user_preferences.AlcoholLimitPreferencesRepository
+import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

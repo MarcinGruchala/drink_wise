@@ -1,4 +1,4 @@
-package com.mgruchala.user_preferences
+package com.mgruchala.user_preferences.alcohol_limit
 
 import kotlinx.coroutines.flow.Flow
 

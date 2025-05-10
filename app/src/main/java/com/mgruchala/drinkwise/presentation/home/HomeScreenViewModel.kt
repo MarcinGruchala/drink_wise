@@ -6,7 +6,7 @@ import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
-import com.mgruchala.user_preferences.AlcoholLimitPreferencesRepository
+import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

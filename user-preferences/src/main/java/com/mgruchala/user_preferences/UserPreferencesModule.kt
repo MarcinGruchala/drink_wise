@@ -1,6 +1,8 @@
 package com.mgruchala.user_preferences
 
 import android.content.Context
+import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesRepository
+import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,7 +12,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AlcoholLimitPreferencesModule {
+object UserPreferencesModule {
 
     @Provides
     @Singleton
