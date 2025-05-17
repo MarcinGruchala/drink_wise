@@ -10,16 +10,21 @@ import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesDataS
 import com.mgruchala.user_preferences.summary_period.CalculationMode
 import com.mgruchala.user_preferences.summary_period.SummaryPeriodPreferencesDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeScreenViewModel @Inject constructor(
     private val drinksRepository: DrinksRepository,
     alcoholLimitPreferencesRepository: AlcoholLimitPreferencesDataSource,
@@ -27,67 +32,51 @@ class HomeScreenViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val alcoholLimitPreferencesFlow = alcoholLimitPreferencesRepository.preferences
+
     private val summaryPeriodPreferencesFlow =
-        summaryPeriodPreferencesRepository.preferences
-
-    private val todayFlow = summaryPeriodPreferencesFlow.flatMapLatest { summaryPrefs ->
-        val cutoff = calculateCutoff(
-            System.currentTimeMillis(),
-            ONE_DAY_IN_MILLIS,
-            summaryPrefs.dailySummaryCalculationPeriod
+        summaryPeriodPreferencesRepository.preferences.shareIn(
+            viewModelScope, SharingStarted.WhileSubscribed(5_000), replay = 1
         )
-        drinksRepository.getDrinksSince(cutoff)
+
+    private fun drinksSince(periodMillis: Long, mode: CalculationMode): Flow<List<DrinkEntity>> =
+        drinksRepository.getDrinksSince(
+            calculateCutoff(System.currentTimeMillis(), periodMillis, mode)
+        )
+
+    private val todayFlow = summaryPeriodPreferencesFlow.flatMapLatest { prefs ->
+        drinksSince(ONE_DAY_IN_MILLIS, prefs.dailySummaryCalculationPeriod)
+    }
+    private val weekFlow = summaryPeriodPreferencesFlow.flatMapLatest { prefs ->
+        drinksSince(SEVEN_DAYS_IN_MILLIS, prefs.weeklySummaryCalculationPeriod)
+    }
+    private val monthFlow = summaryPeriodPreferencesFlow.flatMapLatest { prefs ->
+        drinksSince(THIRTY_DAYS_IN_MILLIS, prefs.monthlySummaryCalculationPeriod)
     }
 
-    private val weekFlow = summaryPeriodPreferencesFlow.flatMapLatest { summaryPrefs ->
-        val cutoff = calculateCutoff(
-            System.currentTimeMillis(),
-            SEVEN_DAYS_IN_MILLIS,
-            summaryPrefs.weeklySummaryCalculationPeriod
-        )
-        drinksRepository.getDrinksSince(cutoff)
-    }
-
-    private val monthFlow = summaryPeriodPreferencesFlow.flatMapLatest { summaryPrefs ->
-        val cutoff = calculateCutoff(
-            System.currentTimeMillis(),
-            THIRTY_DAYS_IN_MILLIS,
-            summaryPrefs.monthlySummaryCalculationPeriod
-        )
-        drinksRepository.getDrinksSince(cutoff)
-    }
+    private fun Flow<List<DrinkEntity>>.unitCount(): Flow<Float> =
+        map { list ->
+            list.sumOf { calculateAlcoholUnits(it.quantity, it.alcoholContent) }.toFloat()
+        }
 
     val state: StateFlow<HomeScreenState> = combine(
-        todayFlow,
-        weekFlow,
-        monthFlow,
+        todayFlow.unitCount(),
+        weekFlow.unitCount(),
+        monthFlow.unitCount(),
         alcoholLimitPreferencesFlow,
         summaryPeriodPreferencesFlow
-    ) { todayDrinks, weekDrinks, monthDrinks, alcoholLimitPreferences, summaryPeriodPreferences ->
-
-        val todayUnits = todayDrinks.sumOf {
-            calculateAlcoholUnits(volumeMl = it.quantity, abv = it.alcoholContent)
-        }
-
-        val weekUnits = weekDrinks.sumOf {
-            calculateAlcoholUnits(volumeMl = it.quantity, abv = it.alcoholContent)
-        }
-
-        val monthUnits = monthDrinks.sumOf {
-            calculateAlcoholUnits(volumeMl = it.quantity, abv = it.alcoholContent)
-        }
+    ) { todayUnits, weekUnits, monthUnits, alcoholLimitPreferences, summaryPeriodPreferences ->
 
         HomeScreenState(
             todayAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(
-                todayUnits.toFloat(),
+                todayUnits,
                 alcoholLimitPreferences.dailyAlcoholUnitLimit
             ),
             weekAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(
-                weekUnits.toFloat(),
+                weekUnits,
                 alcoholLimitPreferences.weeklyAlcoholUnitLimit
             ),
             monthAlcoholUnitLevel = AlcoholUnitLevel.fromUnitCount(
-                monthUnits.toFloat(),
+                monthUnits,
                 alcoholLimitPreferences.monthlyAlcoholUnitLimit
             ),
             dailySummaryCalculationMode = summaryPeriodPreferences.dailySummaryCalculationPeriod,
@@ -134,6 +123,7 @@ class HomeScreenViewModel @Inject constructor(
             CalculationMode.ROLLING_PERIOD -> {
                 currentTime - periodType
             }
+
             CalculationMode.SINCE_START_OF_PERIOD -> {
                 val calendar = Calendar.getInstance().apply {
                     timeInMillis = currentTime
@@ -146,15 +136,18 @@ class HomeScreenViewModel @Inject constructor(
                     ONE_DAY_IN_MILLIS -> {
                         calendar.timeInMillis
                     }
+
                     SEVEN_DAYS_IN_MILLIS -> {
                         calendar.firstDayOfWeek = Calendar.MONDAY
                         calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
                         calendar.timeInMillis
                     }
+
                     THIRTY_DAYS_IN_MILLIS -> {
                         calendar.set(Calendar.DAY_OF_MONTH, 1)
                         calendar.timeInMillis
                     }
+
                     else -> {
                         currentTime - periodType
                     }
