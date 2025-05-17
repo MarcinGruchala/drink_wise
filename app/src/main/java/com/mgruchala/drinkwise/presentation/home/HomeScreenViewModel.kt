@@ -6,6 +6,7 @@ import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
+import com.mgruchala.drinkwise.utils.time.Clock
 import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesDataSource
 import com.mgruchala.user_preferences.summary_period.CalculationMode
 import com.mgruchala.user_preferences.summary_period.SummaryPeriodPreferencesDataSource
@@ -28,7 +29,8 @@ import javax.inject.Inject
 class HomeScreenViewModel @Inject constructor(
     private val drinksRepository: DrinksRepository,
     alcoholLimitPreferencesRepository: AlcoholLimitPreferencesDataSource,
-    private val summaryPeriodPreferencesRepository: SummaryPeriodPreferencesDataSource
+    private val summaryPeriodPreferencesRepository: SummaryPeriodPreferencesDataSource,
+    private val clock: Clock
 ) : ViewModel() {
 
     private val alcoholLimitPreferencesFlow = alcoholLimitPreferencesRepository.preferences
@@ -40,7 +42,7 @@ class HomeScreenViewModel @Inject constructor(
 
     private fun drinksSince(periodMillis: Long, mode: CalculationMode): Flow<List<DrinkEntity>> =
         drinksRepository.getDrinksSince(
-            calculateCutoff(System.currentTimeMillis(), periodMillis, mode)
+            calculateCutoff(clock.nowMillis(), periodMillis, mode)
         )
 
     private val todayFlow = summaryPeriodPreferencesFlow.flatMapLatest { prefs ->
@@ -100,7 +102,7 @@ class HomeScreenViewModel @Inject constructor(
     fun registerNewDrinks(quantity: Int, abv: Float, numberOfDrinks: Int) {
         viewModelScope.launch {
             val drinks = mutableListOf<DrinkEntity>()
-            val timestampForAllDrinks = System.currentTimeMillis()
+            val timestampForAllDrinks = clock.nowMillis()
             for (i in 1..numberOfDrinks) {
                 val newDrink = DrinkEntity(
                     uid = 0,
