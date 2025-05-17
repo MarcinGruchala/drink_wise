@@ -1,16 +1,16 @@
-package com.mgruchala.user_preferences
+package com.mgruchala.user_preferences.alcohol_limit
 
 import kotlinx.coroutines.flow.Flow
 
 /**
  * Repository interface for managing alcohol limit user preferences.
  */
-interface AlcoholLimitPreferencesRepository {
+interface AlcoholLimitPreferencesDataSource {
 
     /**
      * Flow of user alcohol limit preferences.
      */
-    val userPreferencesFlow: Flow<AlcoholLimitPreferences>
+    val preferences: Flow<AlcoholLimitPreferences>
 
     /**
      * Update daily alcohol limit

@@ -6,19 +6,9 @@ import kotlinx.coroutines.flow.Flow
 interface DrinksRepository {
 
     /**
-     * Fetches all drinks consumed within the past 24 hours, as a Flow.
+     * Fetches all drinks consumed since a given cutoff time, as a Flow.
      */
-    fun getDrinksLast24Hours(): Flow<List<DrinkEntity>>
-
-    /**
-     * Fetches all drinks consumed within the past 7 days, as a Flow.
-     */
-    fun getDrinksLast7Days(): Flow<List<DrinkEntity>>
-
-    /**
-     * Fetches all drinks consumed within the past 30 days, as a Flow.
-     */
-    fun getDrinksLast30Days(): Flow<List<DrinkEntity>>
+    fun getDrinksSince(cutoff: Long): Flow<List<DrinkEntity>>
 
     /**
      * Fetches all drinks in the database, as a Flow.
@@ -34,12 +24,5 @@ interface DrinksRepository {
      * Deletes a drink from the database.
      */
     suspend fun deleteDrink(drink: DrinkEntity): Int
-
-    /**
-     * Fetches all drinks consumed within a specific month, as a Flow.
-     * @param year The year (e.g., 2023)
-     * @param month The month (1-12)
-     */
-    fun getDrinksForMonth(year: Int, month: Int): Flow<List<DrinkEntity>>
 }
 
