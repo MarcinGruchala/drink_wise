@@ -33,9 +33,9 @@ class HomeScreenViewModel @Inject constructor(
     private val clock: Clock
 ) : ViewModel() {
 
-    private val alcoholLimitPreferencesFlow = alcoholLimitPreferencesRepository.preferences
+    private val alcoholLimitPreferences = alcoholLimitPreferencesRepository.preferences
 
-    private val summaryPeriodPreferencesFlow =
+    private val summaryPeriodPreferences =
         summaryPeriodPreferencesRepository.preferences.shareIn(
             viewModelScope, SharingStarted.WhileSubscribed(5_000), replay = 1
         )
@@ -45,13 +45,13 @@ class HomeScreenViewModel @Inject constructor(
             calculateCutoff(clock.nowMillis(), periodMillis, mode)
         )
 
-    private val todayFlow = summaryPeriodPreferencesFlow.flatMapLatest { prefs ->
+    private val todayFlow = summaryPeriodPreferences.flatMapLatest { prefs ->
         drinksSince(ONE_DAY_IN_MILLIS, prefs.dailySummaryCalculationPeriod)
     }
-    private val weekFlow = summaryPeriodPreferencesFlow.flatMapLatest { prefs ->
+    private val weekFlow = summaryPeriodPreferences.flatMapLatest { prefs ->
         drinksSince(SEVEN_DAYS_IN_MILLIS, prefs.weeklySummaryCalculationPeriod)
     }
-    private val monthFlow = summaryPeriodPreferencesFlow.flatMapLatest { prefs ->
+    private val monthFlow = summaryPeriodPreferences.flatMapLatest { prefs ->
         drinksSince(THIRTY_DAYS_IN_MILLIS, prefs.monthlySummaryCalculationPeriod)
     }
 
@@ -64,8 +64,8 @@ class HomeScreenViewModel @Inject constructor(
         todayFlow.unitCount(),
         weekFlow.unitCount(),
         monthFlow.unitCount(),
-        alcoholLimitPreferencesFlow,
-        summaryPeriodPreferencesFlow
+        alcoholLimitPreferences,
+        summaryPeriodPreferences
     ) { todayUnits, weekUnits, monthUnits, alcoholLimitPreferences, summaryPeriodPreferences ->
 
         HomeScreenState(
@@ -101,16 +101,9 @@ class HomeScreenViewModel @Inject constructor(
 
     fun registerNewDrinks(quantity: Int, abv: Float, numberOfDrinks: Int) {
         viewModelScope.launch {
-            val drinks = mutableListOf<DrinkEntity>()
-            val timestampForAllDrinks = clock.nowMillis()
-            for (i in 1..numberOfDrinks) {
-                val newDrink = DrinkEntity(
-                    uid = 0,
-                    quantity = quantity,
-                    alcoholContent = abv,
-                    timestamp = timestampForAllDrinks
-                )
-                drinks.add(newDrink)
+            val timestamp = clock.nowMillis()
+            val drinks = List(numberOfDrinks) {
+                DrinkEntity(uid = 0, quantity = quantity, alcoholContent = abv, timestamp = timestamp)
             }
             drinksRepository.addDrinks(*drinks.toTypedArray())
         }
