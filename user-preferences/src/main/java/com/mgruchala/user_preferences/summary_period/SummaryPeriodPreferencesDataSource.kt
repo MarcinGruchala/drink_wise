@@ -2,12 +2,12 @@ package com.mgruchala.user_preferences.summary_period
 
 import kotlinx.coroutines.flow.Flow
 
-interface SummaryPeriodPreferencesRepository {
+interface SummaryPeriodPreferencesDataSource {
 
     /**
      * Flow of user summary period preferences.
      */
-    val userPreferencesFlow: Flow<SummaryPeriodPreferences>
+    val preferences: Flow<SummaryPeriodPreferences>
 
     /**
      * Update daily summary calculation period.

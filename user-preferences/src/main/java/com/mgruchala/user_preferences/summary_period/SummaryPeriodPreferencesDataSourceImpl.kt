@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 
-class SummaryPeriodPreferencesRepositoryImpl @Inject constructor(
+class SummaryPeriodPreferencesDataSourceImpl @Inject constructor(
     private val context: Context
-) : SummaryPeriodPreferencesRepository {
+) : SummaryPeriodPreferencesDataSource {
 
     private object PreferencesKeys {
         val DAILY_SUMMARY_CALCULATION_PERIOD = stringPreferencesKey("daily_summary_calculation_period")
@@ -21,7 +21,7 @@ class SummaryPeriodPreferencesRepositoryImpl @Inject constructor(
         val MONTHLY_SUMMARY_CALCULATION_PERIOD = stringPreferencesKey("monthly_summary_calculation_period")
     }
 
-    override val userPreferencesFlow: Flow<SummaryPeriodPreferences> = context.dataStore.data
+    override val preferences: Flow<SummaryPeriodPreferences> = context.dataStore.data
         .map { preferences ->
             SummaryPeriodPreferences(
                 dailySummaryCalculationPeriod = CalculationMode.valueOf(

@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class AlcoholLimitPreferencesRepositoryImpl @Inject constructor(
+class AlcoholLimitPreferencesDataSourceImpl @Inject constructor(
     private val context: Context
-) : AlcoholLimitPreferencesRepository {
+) : AlcoholLimitPreferencesDataSource {
 
     private object PreferencesKeys {
         val DAILY_ALCOHOL_LIMIT = floatPreferencesKey("daily_alcohol_limit")
@@ -20,7 +20,7 @@ class AlcoholLimitPreferencesRepositoryImpl @Inject constructor(
         val MONTHLY_ALCOHOL_LIMIT = floatPreferencesKey("monthly_alcohol_limit")
     }
 
-    override val userPreferencesFlow: Flow<AlcoholLimitPreferences> = context.dataStore.data
+    override val preferences: Flow<AlcoholLimitPreferences> = context.dataStore.data
         .map { preferences ->
             AlcoholLimitPreferences(
                 dailyAlcoholUnitLimit = preferences[PreferencesKeys.DAILY_ALCOHOL_LIMIT]

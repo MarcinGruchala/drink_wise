@@ -1,10 +1,10 @@
 package com.mgruchala.user_preferences
 
 import android.content.Context
-import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesRepository
-import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesRepositoryImpl
-import com.mgruchala.user_preferences.summary_period.SummaryPeriodPreferencesRepository
-import com.mgruchala.user_preferences.summary_period.SummaryPeriodPreferencesRepositoryImpl
+import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesDataSource
+import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesDataSourceImpl
+import com.mgruchala.user_preferences.summary_period.SummaryPeriodPreferencesDataSource
+import com.mgruchala.user_preferences.summary_period.SummaryPeriodPreferencesDataSourceImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,17 +18,17 @@ object UserPreferencesModule {
 
     @Provides
     @Singleton
-    fun provideAlcoholLimitPreferencesRepository(
+    fun provideAlcoholLimitPreferencesDataSource(
         @ApplicationContext context: Context
-    ): AlcoholLimitPreferencesRepository {
-        return AlcoholLimitPreferencesRepositoryImpl(context)
+    ): AlcoholLimitPreferencesDataSource {
+        return AlcoholLimitPreferencesDataSourceImpl(context)
     }
 
     @Provides
     @Singleton
-    fun provideSummaryPeriodPreferencesRepository(
+    fun provideSummaryPeriodPreferencesDataSource(
         @ApplicationContext context: Context
-    ): SummaryPeriodPreferencesRepository {
-        return SummaryPeriodPreferencesRepositoryImpl(context)
+    ): SummaryPeriodPreferencesDataSource {
+        return SummaryPeriodPreferencesDataSourceImpl(context)
     }
 } 

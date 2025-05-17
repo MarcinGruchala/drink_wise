@@ -6,9 +6,9 @@ import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
-import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesRepository
+import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesDataSource
 import com.mgruchala.user_preferences.summary_period.CalculationMode
-import com.mgruchala.user_preferences.summary_period.SummaryPeriodPreferencesRepository
+import com.mgruchala.user_preferences.summary_period.SummaryPeriodPreferencesDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,13 +22,13 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
     private val drinksRepository: DrinksRepository,
-    alcoholLimitPreferencesRepository: AlcoholLimitPreferencesRepository,
-    private val summaryPeriodPreferencesRepository: SummaryPeriodPreferencesRepository
+    alcoholLimitPreferencesRepository: AlcoholLimitPreferencesDataSource,
+    private val summaryPeriodPreferencesRepository: SummaryPeriodPreferencesDataSource
 ) : ViewModel() {
 
-    private val alcoholLimitPreferencesFlow = alcoholLimitPreferencesRepository.userPreferencesFlow
+    private val alcoholLimitPreferencesFlow = alcoholLimitPreferencesRepository.preferences
     private val summaryPeriodPreferencesFlow =
-        summaryPeriodPreferencesRepository.userPreferencesFlow
+        summaryPeriodPreferencesRepository.preferences
 
     private val todayFlow = summaryPeriodPreferencesFlow.flatMapLatest { summaryPrefs ->
         val cutoff = calculateCutoff(

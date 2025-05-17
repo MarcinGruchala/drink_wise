@@ -6,7 +6,7 @@ import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
-import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesRepository
+import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -31,11 +31,11 @@ data class CalendarDayData(
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
     drinksRepository: DrinksRepository,
-    alcoholLimitPreferencesRepository: AlcoholLimitPreferencesRepository
+    alcoholLimitPreferencesRepository: AlcoholLimitPreferencesDataSource
 ) : ViewModel() {
 
     private val drinksFlow = drinksRepository.getAllDrinks()
-    private val userPreferencesFlow = alcoholLimitPreferencesRepository.userPreferencesFlow
+    private val userPreferencesFlow = alcoholLimitPreferencesRepository.preferences
 
     val state: StateFlow<CalendarScreenState> =
         combine(drinksFlow, userPreferencesFlow) { drinks, userPreferences ->
