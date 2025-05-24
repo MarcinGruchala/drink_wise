@@ -33,6 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mgruchala.drinkwise.R
+import androidx.compose.ui.res.stringResource
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 
 @Composable
@@ -102,11 +104,11 @@ fun DrinkTypeSection(
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AlcoholCalculatorSectionText(text = "Drink Type")
+        AlcoholCalculatorSectionText(text = stringResource(id = R.string.calculator_drink_type))
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             imageVector = Icons.Rounded.WineBar,
-            contentDescription = "Drink Icon"
+            contentDescription = stringResource(id = R.string.calculator_drink_icon_content_description)
         )
     }
 }
@@ -127,7 +129,7 @@ fun DrinkParametersSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            AlcoholCalculatorSectionText("Quantity (ml)")
+            AlcoholCalculatorSectionText(stringResource(id = R.string.calculator_quantity_ml))
             Spacer(modifier = Modifier.height(8.dp))
             AlcoholCalculatorTextField(
                 value = quantityValue?.toString() ?: "",
@@ -148,7 +150,7 @@ fun DrinkParametersSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            AlcoholCalculatorSectionText("Alcohol content (%)")
+            AlcoholCalculatorSectionText(stringResource(id = R.string.calculator_alcohol_content_percentage))
             AlcoholCalculatorTextField(
                 value = alcoholContentValue?.toString() ?: "",
                 onValueChange = { newValue ->
@@ -198,20 +200,25 @@ fun DrinksNumberSection(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AlcoholCalculatorSectionText("Number of drinks: $number")
+        AlcoholCalculatorSectionText(
+            stringResource(
+                id = R.string.calculator_number_of_drinks,
+                number
+            )
+        )
         Spacer(modifier = Modifier.weight(1f))
 
         IconButton(onClick = { onDecrement() }) {
             Icon(
                 imageVector = Icons.Rounded.Remove,
-                contentDescription = "Decrease number"
+                contentDescription = stringResource(id = R.string.calculator_decrease_number_content_description)
             )
         }
 
         IconButton(onClick = { onIncrement() }) {
             Icon(
                 imageVector = Icons.Rounded.Add,
-                contentDescription = "Increase number"
+                contentDescription = stringResource(id = R.string.calculator_increase_number_content_description)
             )
         }
     }
@@ -230,12 +237,12 @@ fun AlcoholUnitSection(
     ) {
         if (alcoholUnits != null) {
             Text(
-                text = "${"%.2f".format(alcoholUnits)} Alcohol Units", // placeholder text, no real calculation here
+                text = "${"%.2f".format(alcoholUnits)} ${stringResource(id = R.string.calculator_alcohol_units_suffix)}",
                 style = MaterialTheme.typography.headlineLarge
             )
         } else {
             Text(
-                text = "Fill in the details above to calculate alcohol units",
+                text = stringResource(id = R.string.calculator_fill_details_prompt),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )

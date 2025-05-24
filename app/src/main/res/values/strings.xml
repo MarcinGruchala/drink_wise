@@ -30,4 +30,13 @@
     <string name="settings_current_limit_label">Current limit: %1$.1f</string>
     <string name="settings_error_invalid_positive_number">Please enter a valid positive number</string>
     <string name="settings_apply_button">Apply</string>
+    <string name="calculator_drink_type">Drink Type</string>
+    <string name="calculator_drink_icon_content_description">Drink Icon</string>
+    <string name="calculator_quantity_ml">Quantity (ml)</string>
+    <string name="calculator_alcohol_content_percentage">Alcohol content (%)</string>
+    <string name="calculator_decrease_number_content_description">Decrease number</string>
+    <string name="calculator_increase_number_content_description">Increase number</string>
+    <string name="calculator_alcohol_units_suffix">Alcohol Units</string>
+    <string name="calculator_fill_details_prompt">Fill in the details above to calculate alcohol units</string>
+    <string name="calculator_number_of_drinks">Number of drinks: %d</string>
 </resources>
