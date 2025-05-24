@@ -20,8 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,12 +32,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mgruchala.drinkwise.R
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.common.AlcoholUnitLevelProgressIndicator
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
@@ -139,7 +139,7 @@ fun MonthNavigationHeader(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Next Month"
+                contentDescription = stringResource(id = R.string.calendar_next_month)
             )
         }
 
@@ -155,7 +155,7 @@ fun MonthNavigationHeader(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "Previous Month"
+                contentDescription = stringResource(id = R.string.calendar_previous_month)
             )
         }
 
@@ -195,7 +195,15 @@ fun DayOfWeekHeader() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        val days = listOf(
+            stringResource(id = R.string.calendar_day_mon),
+            stringResource(id = R.string.calendar_day_tue),
+            stringResource(id = R.string.calendar_day_wed),
+            stringResource(id = R.string.calendar_day_thu),
+            stringResource(id = R.string.calendar_day_fri),
+            stringResource(id = R.string.calendar_day_sat),
+            stringResource(id = R.string.calendar_day_sun)
+        )
         days.forEach { day ->
             Text(
                 text = day,
