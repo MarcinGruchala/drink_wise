@@ -18,4 +18,16 @@
     <string name="drinks_summary_card_monthly_option_last_30_days">Last 30 Days</string>
     <string name="add_drink_dialog_cancel_button">Cancel</string>
     <string name="add_drink_dialog_add_button">Add</string>
+    <string name="settings_limit_updated_successfully">Limit updated successfully</string>
+    <string name="settings_set_alcohol_limits_title">Set your alcohol consumption limits</string>
+    <string name="settings_limits_description">These limits will be used to track your alcohol consumption and provide warnings when you approach or exceed them.</string>
+    <string name="settings_daily_limit_title">Daily Limit</string>
+    <string name="settings_daily_limit_description">Maximum alcohol units per day (24 hours)</string>
+    <string name="settings_weekly_limit_title">Weekly Limit</string>
+    <string name="settings_weekly_limit_description">Maximum alcohol units per week (7 days)</string>
+    <string name="settings_monthly_limit_title">Monthly Limit</string>
+    <string name="settings_monthly_limit_description">Maximum alcohol units per month (30 days)</string>
+    <string name="settings_current_limit_label">Current limit: %1$.1f</string>
+    <string name="settings_error_invalid_positive_number">Please enter a valid positive number</string>
+    <string name="settings_apply_button">Apply</string>
 </resources>
