@@ -30,11 +30,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mgruchala.drinkwise.R
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.common.AlcoholUnitLevelProgressIndicator
 import com.mgruchala.user_preferences.summary_period.CalculationMode
@@ -44,11 +43,11 @@ enum class DrinkSummaryCardPeriod {
     WEEKLY,
     MONTHLY;
 
-    fun getDisplayTitle(): String {
+    fun getDisplayTitle(): Int {
         return when (this) {
-            DAILY -> "Today"
-            WEEKLY -> "This Week"
-            MONTHLY -> "This Month"
+            DAILY -> R.string.drinks_summary_card_today
+            WEEKLY -> R.string.drinks_summary_card_this_week
+            MONTHLY -> R.string.drinks_summary_card_this_month
         }
     }
 }
@@ -87,7 +86,7 @@ fun DrinksSummaryCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        period.getDisplayTitle(),
+                        stringResource(id = period.getDisplayTitle()),
                         style = MaterialTheme.typography.labelLarge
                     )
                     Spacer(modifier = Modifier.size(4.dp))
@@ -102,22 +101,29 @@ fun DrinksSummaryCard(
                 )
                 IconButton(
                     onClick = { expanded = !expanded },
-                    modifier = Modifier.semantics {
-                        contentDescription = if (expanded) "Collapse details" else "Expand details"
-                    }
                 ) {
                     Icon(
                         imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                        contentDescription = if (expanded) "Collapse" else "Expand"
+                        contentDescription = if (expanded) stringResource(id = R.string.drinks_summary_card_collapse_icon_content_description) else stringResource(
+                            id = R.string.drinks_summary_card_expand_icon_content_description
+                        )
                     )
                 }
             }
 
             AnimatedVisibility(visible = expanded) {
                 val (option1Text, option2Text) = when (period) {
-                    DrinkSummaryCardPeriod.DAILY -> "Since 00:00" to "Last 24h"
-                    DrinkSummaryCardPeriod.WEEKLY -> "This Week" to "Last 7 Days"
-                    DrinkSummaryCardPeriod.MONTHLY -> "This Month" to "Last 30 Days"
+                    DrinkSummaryCardPeriod.DAILY -> stringResource(id = R.string.drinks_summary_card_daily_option_since_midnight) to stringResource(
+                        id = R.string.drinks_summary_card_daily_option_last_24h
+                    )
+
+                    DrinkSummaryCardPeriod.WEEKLY -> stringResource(id = R.string.drinks_summary_card_weekly_option_this_week) to stringResource(
+                        id = R.string.drinks_summary_card_weekly_option_last_7_days
+                    )
+
+                    DrinkSummaryCardPeriod.MONTHLY -> stringResource(id = R.string.drinks_summary_card_monthly_option_this_month) to stringResource(
+                        id = R.string.drinks_summary_card_monthly_option_last_30_days
+                    )
                 }
                 val options = listOf(option1Text, option2Text)
 
