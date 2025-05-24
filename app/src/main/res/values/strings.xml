@@ -1,3 +1,58 @@
 <resources>
     <string name="app_name">Drink Wise</string>
+    <!-- Bottom Navigation -->
+    <string name="bottom_navigation_home">Home</string>
+    <string name="bottom_navigation_calendar">Calendar</string>
+    <string name="bottom_navigation_calculator">Calculator</string>
+    <string name="bottom_navigation_settings">Settings</string>
+    <!-- Home Screen -->
+    <string name="home_screen_add_drink_fab_content_description">Add</string>
+    <!-- Drinks summary card -->
+    <string name="drinks_summary_card_today">Today</string>
+    <string name="drinks_summary_card_this_week">This Week</string>
+    <string name="drinks_summary_card_this_month">This Month</string>
+    <string name="drinks_summary_card_collapse_icon_content_description">Collapse details</string>
+    <string name="drinks_summary_card_expand_icon_content_description">Expand details</string>
+    <string name="drinks_summary_card_daily_option_since_midnight">Since 00:00</string>
+    <string name="drinks_summary_card_daily_option_last_24h">Last 24h</string>
+    <string name="drinks_summary_card_weekly_option_this_week">This Week</string>
+    <string name="drinks_summary_card_weekly_option_last_7_days">Last 7 Days</string>
+    <string name="drinks_summary_card_monthly_option_this_month">This Month</string>
+    <string name="drinks_summary_card_monthly_option_last_30_days">Last 30 Days</string>
+    <!-- Add drink dialog -->
+    <string name="add_drink_dialog_cancel_button">Cancel</string>
+    <string name="add_drink_dialog_add_button">Add</string>
+    <!-- Settings -->
+    <string name="settings_limit_updated_successfully">Limit updated successfully</string>
+    <string name="settings_set_alcohol_limits_title">Set your alcohol consumption limits</string>
+    <string name="settings_limits_description">These limits will be used to track your alcohol consumption and provide warnings when you approach or exceed them.</string>
+    <string name="settings_daily_limit_title">Daily Limit</string>
+    <string name="settings_daily_limit_description">Maximum alcohol units per day (24 hours)</string>
+    <string name="settings_weekly_limit_title">Weekly Limit</string>
+    <string name="settings_weekly_limit_description">Maximum alcohol units per week (7 days)</string>
+    <string name="settings_monthly_limit_title">Monthly Limit</string>
+    <string name="settings_monthly_limit_description">Maximum alcohol units per month (30 days)</string>
+    <string name="settings_current_limit_label">Current limit: %1$.1f</string>
+    <string name="settings_error_invalid_positive_number">Please enter a valid positive number</string>
+    <string name="settings_apply_button">Apply</string>
+    <!-- Calculator -->
+    <string name="calculator_drink_type">Drink Type</string>
+    <string name="calculator_drink_icon_content_description">Drink Icon</string>
+    <string name="calculator_quantity_ml">Quantity (ml)</string>
+    <string name="calculator_alcohol_content_percentage">Alcohol content (%)</string>
+    <string name="calculator_decrease_number_content_description">Decrease number</string>
+    <string name="calculator_increase_number_content_description">Increase number</string>
+    <string name="calculator_alcohol_units_suffix">Alcohol Units</string>
+    <string name="calculator_fill_details_prompt">Fill in the details above to calculate alcohol units</string>
+    <string name="calculator_number_of_drinks">Number of drinks: %d</string>
+    <!-- Calendar Screen -->
+    <string name="calendar_next_month">Next Month</string>
+    <string name="calendar_previous_month">Previous Month</string>
+    <string name="calendar_day_mon">Mon</string>
+    <string name="calendar_day_tue">Tue</string>
+    <string name="calendar_day_wed">Wed</string>
+    <string name="calendar_day_thu">Thu</string>
+    <string name="calendar_day_fri">Fri</string>
+    <string name="calendar_day_sat">Sat</string>
+    <string name="calendar_day_sun">Sun</string>
 </resources>

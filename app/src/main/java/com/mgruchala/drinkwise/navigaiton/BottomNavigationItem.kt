@@ -2,9 +2,10 @@ package com.mgruchala.drinkwise.navigaiton
 
 import androidx.annotation.DrawableRes
 import com.mgruchala.drinkwise.R
+import androidx.annotation.StringRes
 
 data class BottomNavigationItem(
-    val name: String,
+    @StringRes val nameRes: Int,
     val route: AppRoute,
     @DrawableRes val activeIconAssetId: Int,
     @DrawableRes val inactiveIconAssetId: Int
@@ -12,25 +13,25 @@ data class BottomNavigationItem(
 
 val bottomNavigationItems = listOf(
     BottomNavigationItem(
-        name = "Home",
+        nameRes = R.string.bottom_navigation_home,
         route = AppRoute.Home,
         activeIconAssetId = R.drawable.ic_home_filled,
         inactiveIconAssetId = R.drawable.ic_home
     ),
     BottomNavigationItem(
-        name = "Calendar",
+        nameRes = R.string.bottom_navigation_calendar,
         route = AppRoute.Calendar,
         activeIconAssetId = R.drawable.ic_calendar_filled,
         inactiveIconAssetId = R.drawable.ic_calendar
     ),
     BottomNavigationItem(
-        name = "Calculator",
+        nameRes = R.string.bottom_navigation_calculator,
         route = AppRoute.Calculator,
         activeIconAssetId = R.drawable.ic_calculate_filled,
         inactiveIconAssetId = R.drawable.ic_calculate
     ),
     BottomNavigationItem(
-        name = "Settings",
+        nameRes = R.string.bottom_navigation_settings,
         route = AppRoute.Settings,
         activeIconAssetId = R.drawable.ic_settings_filled,
         inactiveIconAssetId = R.drawable.ic_settings

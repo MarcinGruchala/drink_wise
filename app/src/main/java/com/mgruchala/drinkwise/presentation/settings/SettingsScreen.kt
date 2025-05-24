@@ -31,9 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mgruchala.drinkwise.R
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -42,10 +44,12 @@ fun SettingsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val limitUpdatedSuccessfullyMessage =
+        stringResource(id = R.string.settings_limit_updated_successfully)
 
     LaunchedEffect(state.showSuccessMessage) {
         if (state.showSuccessMessage) {
-            snackbarHostState.showSnackbar("Limit updated successfully")
+            snackbarHostState.showSnackbar(message = limitUpdatedSuccessfullyMessage)
             viewModel.dismissSuccessMessage()
         }
     }
@@ -61,36 +65,36 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Set your alcohol consumption limits",
+                text = stringResource(R.string.settings_set_alcohol_limits_title),
                 style = MaterialTheme.typography.headlineSmall
             )
 
             Text(
-                text = "These limits will be used to track your alcohol consumption and provide warnings when you approach or exceed them.",
+                text = stringResource(R.string.settings_limits_description),
                 style = MaterialTheme.typography.bodyMedium
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             LimitSettingCard(
-                title = "Daily Limit",
-                description = "Maximum alcohol units per day (24 hours)",
+                title = stringResource(R.string.settings_daily_limit_title),
+                description = stringResource(R.string.settings_daily_limit_description),
                 currentValue = state.dailyLimit,
                 onApply = { viewModel.updateDailyLimit(it) },
                 isSaving = LimitType.DAILY in state.savingLimits
             )
 
             LimitSettingCard(
-                title = "Weekly Limit",
-                description = "Maximum alcohol units per week (7 days)",
+                title = stringResource(R.string.settings_weekly_limit_title),
+                description = stringResource(R.string.settings_weekly_limit_description),
                 currentValue = state.weeklyLimit,
                 onApply = { viewModel.updateWeeklyLimit(it) },
                 isSaving = LimitType.WEEKLY in state.savingLimits
             )
 
             LimitSettingCard(
-                title = "Monthly Limit",
-                description = "Maximum alcohol units per month (30 days)",
+                title = stringResource(R.string.settings_monthly_limit_title),
+                description = stringResource(R.string.settings_monthly_limit_description),
                 currentValue = state.monthlyLimit,
                 onApply = { viewModel.updateMonthlyLimit(it) },
                 isSaving = LimitType.MONTHLY in state.savingLimits
@@ -143,13 +147,20 @@ fun LimitSettingCard(
                         value = it
                         isError = it.toFloatOrNull() == null || it.toFloatOrNull()!! <= 0
                     },
-                    label = { Text("Current limit: $currentValue") },
+                    label = {
+                        Text(
+                            stringResource(
+                                R.string.settings_current_limit_label,
+                                currentValue
+                            )
+                        )
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.weight(1f),
                     isError = isError,
                     supportingText = {
                         if (isError) {
-                            Text("Please enter a valid positive number")
+                            Text(stringResource(R.string.settings_error_invalid_positive_number))
                         }
                     }
                 )
@@ -165,7 +176,7 @@ fun LimitSettingCard(
                     },
                     enabled = !isSaving && !isError && value.toFloatOrNull() != null
                 ) {
-                    Text("Apply")
+                    Text(stringResource(R.string.settings_apply_button))
                 }
             }
         }
