@@ -1,10 +1,13 @@
 <resources>
     <string name="app_name">Drink Wise</string>
+    <!-- Bottom Navigation -->
     <string name="bottom_navigation_home">Home</string>
     <string name="bottom_navigation_calendar">Calendar</string>
     <string name="bottom_navigation_calculator">Calculator</string>
     <string name="bottom_navigation_settings">Settings</string>
+    <!-- Home Screen -->
     <string name="home_screen_add_drink_fab_content_description">Add</string>
+    <!-- Drinks summary card -->
     <string name="drinks_summary_card_today">Today</string>
     <string name="drinks_summary_card_this_week">This Week</string>
     <string name="drinks_summary_card_this_month">This Month</string>
@@ -16,8 +19,10 @@
     <string name="drinks_summary_card_weekly_option_last_7_days">Last 7 Days</string>
     <string name="drinks_summary_card_monthly_option_this_month">This Month</string>
     <string name="drinks_summary_card_monthly_option_last_30_days">Last 30 Days</string>
+    <!-- Add drink dialog -->
     <string name="add_drink_dialog_cancel_button">Cancel</string>
     <string name="add_drink_dialog_add_button">Add</string>
+    <!-- Settings -->
     <string name="settings_limit_updated_successfully">Limit updated successfully</string>
     <string name="settings_set_alcohol_limits_title">Set your alcohol consumption limits</string>
     <string name="settings_limits_description">These limits will be used to track your alcohol consumption and provide warnings when you approach or exceed them.</string>
@@ -30,6 +35,7 @@
     <string name="settings_current_limit_label">Current limit: %1$.1f</string>
     <string name="settings_error_invalid_positive_number">Please enter a valid positive number</string>
     <string name="settings_apply_button">Apply</string>
+    <!-- Calculator -->
     <string name="calculator_drink_type">Drink Type</string>
     <string name="calculator_drink_icon_content_description">Drink Icon</string>
     <string name="calculator_quantity_ml">Quantity (ml)</string>
