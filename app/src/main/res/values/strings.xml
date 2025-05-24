@@ -16,4 +16,6 @@
     <string name="drinks_summary_card_weekly_option_last_7_days">Last 7 Days</string>
     <string name="drinks_summary_card_monthly_option_this_month">This Month</string>
     <string name="drinks_summary_card_monthly_option_last_30_days">Last 30 Days</string>
+    <string name="add_drink_dialog_cancel_button">Cancel</string>
+    <string name="add_drink_dialog_add_button">Add</string>
 </resources>
