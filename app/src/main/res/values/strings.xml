@@ -55,4 +55,22 @@
     <string name="calendar_day_fri">Fri</string>
     <string name="calendar_day_sat">Sat</string>
     <string name="calendar_day_sun">Sun</string>
+    <!-- Day Details Screen -->
+    <string name="day_details_no_drinks">No drinks recorded</string>
+    <string name="day_details_units_label">units</string>
+    <string name="day_details_retry">Retry</string>
+    <string name="day_details_error_loading">Failed to load drinks</string>
+    <string name="day_details_navigate_back">Navigate back</string>
+    <string name="day_details_drink_icon">Drink</string>
+    <!-- Day Details Accessibility -->
+    <string name="day_details_a11y_indicator">%1$s of %2$s units consumed, %3$d percent of daily limit</string>
+    <string name="day_details_a11y_over_limit">, exceeding daily limit</string>
+    <string name="day_details_a11y_drink_item">%1$s, %2$s, %3$s percent alcohol, %4$s units</string>
+    <!-- Relative time -->
+    <string name="relative_time_today">Today</string>
+    <string name="relative_time_yesterday">Yesterday</string>
+    <string name="relative_time_days_ago">%d days ago</string>
+    <string name="relative_time_weeks_ago">%d weeks ago</string>
+    <string name="relative_time_months_ago">%d months ago</string>
+    <string name="relative_time_years_ago">%d years ago</string>
 </resources>
