@@ -7,9 +7,18 @@ This file contains features to implement. Each feature has a dedicated folder in
 ### Day details
 - **Status**: Planned
 - **Plans**: [docs/features/day-details/](./features/day-details/)
-- **Description**: Currently on the calendar screen I can see a high level overview of alcohol consumption in each day. I would like to be able to enter a selected day and see registered drinks for that day.  
+- **Description**: Currently, on the calendar screen, I can see a high-level overview of alcohol consumption for each day. I would like to be able to enter a selected day and see registered drinks for that day. Screen detail page should have circle showing up alcohol consumption on the top of the page and below should be list of drinks drunk that day.   
+
+### Edit day details
+- **Status**: Planned
+- **Plans**: [docs/features/edit-day-details/](./features/edit-day-details/)
+- **Description**: I should be able to add a drink to that day, update existing drinks, and delete drinks. on Day deatils screen
 
 ## Ideas for future development
+
+- Monthly alcohol consumption on the calendar page.
+- Add unit test for whole application
+
 
 ### Multiple Language support
 - Support for Polish language
