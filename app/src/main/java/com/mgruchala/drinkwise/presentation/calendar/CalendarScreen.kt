@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,6 +53,7 @@ import java.util.Locale
 
 @Composable
 fun CalendarScreen(
+    onDayClick: (LocalDate) -> Unit = {},
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -60,13 +63,19 @@ fun CalendarScreen(
             CircularProgressIndicator()
         }
     } else {
-        CalendarScreenContent(calendarData = state.calendarData)
+        CalendarScreenContent(
+            calendarData = state.calendarData,
+            onDayClick = onDayClick
+        )
     }
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
+fun CalendarScreenContent(
+    calendarData: Map<YearMonth, List<CalendarDayData>>,
+    onDayClick: (LocalDate) -> Unit = {}
+) {
     val sortedMonths = calendarData.keys.sortedDescending()
     val initialPage = 0
     val pagerState = rememberPagerState(initialPage = initialPage) { sortedMonths.size }
@@ -110,7 +119,7 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
             ) { page ->
                 val month = sortedMonths[page]
                 val days = calendarData[month] ?: emptyList()
-                MonthCalendar(month, days)
+                MonthCalendar(month, days, onDayClick)
             }
         }
     }
@@ -163,7 +172,11 @@ fun MonthNavigationHeader(
 }
 
 @Composable
-fun MonthCalendar(month: YearMonth, originalDays: List<CalendarDayData>) {
+fun MonthCalendar(
+    month: YearMonth,
+    originalDays: List<CalendarDayData>,
+    onDayClick: (LocalDate) -> Unit = {}
+) {
     val daysMap = originalDays.associateBy { it.date.dayOfMonth }
 
     val allDaysOfMonth = (1..month.lengthOfMonth()).map { dayOfMonth ->
@@ -184,7 +197,7 @@ fun MonthCalendar(month: YearMonth, originalDays: List<CalendarDayData>) {
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         allCells.chunked(7).forEach { weekCells ->
-            WeekRow(weekCells)
+            WeekRow(weekCells, onDayClick)
         }
     }
 }
@@ -218,7 +231,10 @@ fun DayOfWeekHeader() {
 }
 
 @Composable
-fun WeekRow(weekDays: List<CalendarDayData?>) {
+fun WeekRow(
+    weekDays: List<CalendarDayData?>,
+    onDayClick: (LocalDate) -> Unit = {}
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -227,7 +243,10 @@ fun WeekRow(weekDays: List<CalendarDayData?>) {
             val dayData = if (index < weekDays.size) weekDays[index] else null
             Box(modifier = Modifier.weight(1f)) {
                 if (dayData != null) {
-                    DayCell(dayData)
+                    DayCell(
+                        dayData = dayData,
+                        onClick = { onDayClick(dayData.date) }
+                    )
                 } else {
                     EmptyDayPlaceholder()
                 }
@@ -246,7 +265,10 @@ fun EmptyDayPlaceholder() {
 }
 
 @Composable
-fun DayCell(dayData: CalendarDayData) {
+fun DayCell(
+    dayData: CalendarDayData,
+    onClick: () -> Unit = {}
+) {
     val isToday = dayData.date.isEqual(LocalDate.now())
     val backgroundModifier = if (isToday) {
         Modifier.background(
@@ -262,6 +284,8 @@ fun DayCell(dayData: CalendarDayData) {
             .fillMaxWidth()
             .aspectRatio(1f)
             .padding(2.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
             .then(backgroundModifier),
         contentAlignment = Alignment.Center
     ) {
