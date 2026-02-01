@@ -12,7 +12,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -56,11 +60,22 @@ fun ConsumptionCircle(
     // Calculate progress for each ring
     val ringProgresses = calculateRingProgresses(ratio, numberOfRings)
 
+    // State to track if animation should start (delayed to ensure visibility)
+    var hasAnimated by remember { mutableStateOf(false) }
+
+    // Trigger animation after a short delay to ensure the composable is visible
+    LaunchedEffect(Unit) {
+        if (animate) {
+            delay(100)
+            hasAnimated = true
+        }
+    }
+
     // Animated progress values for each ring
     val animatedProgresses = ringProgresses.map { targetProgress ->
-        val animatable = remember(targetProgress) { Animatable(0f) }
-        LaunchedEffect(targetProgress) {
-            if (animate) {
+        val animatable = remember { Animatable(0f) }
+        LaunchedEffect(targetProgress, hasAnimated) {
+            if (animate && hasAnimated) {
                 animatable.animateTo(
                     targetValue = targetProgress,
                     animationSpec = spring(
@@ -68,7 +83,7 @@ fun ConsumptionCircle(
                         stiffness = Spring.StiffnessLow
                     )
                 )
-            } else {
+            } else if (!animate) {
                 animatable.snapTo(targetProgress)
             }
         }
@@ -91,17 +106,27 @@ fun ConsumptionCircle(
         }
     }
 
+    // Calculate text padding based on number of rings
+    // Each ring adds padding, plus the stroke width of innermost ring, plus extra spacing
+    val baseStrokeWidth = 12
+    val totalRingInset = (numberOfRings - 1) * RING_PADDING_DP + baseStrokeWidth
+    val textPadding = (totalRingInset + 16).dp
+
     Box(
         modifier = modifier.semantics {
             contentDescription = accessibilityDescription
         },
         contentAlignment = Alignment.Center
     ) {
-        // Draw rings from outermost to innermost
+        // Draw rings with partial ring (last in list) as outermost
         animatedProgresses.forEachIndexed { index, animatable ->
-            val ringPadding = (index * RING_PADDING_DP).dp
+            // Reverse: partial ring (last in list) becomes outermost (0 padding)
+            val reversedIndex = animatedProgresses.size - 1 - index
+            val ringPadding = (reversedIndex * RING_PADDING_DP).dp
+
+            // Color: index 0 in the list is the base ring (0-100%), others are overflow (red)
             val ringColor = if (index > 0) AlcoholUnitLevelHigh else baseColor
-            val strokeWidth = calculateStrokeWidth(index)
+            val strokeWidth = calculateStrokeWidth(reversedIndex)
 
             CircularProgressIndicator(
                 progress = { animatable.value },
@@ -118,7 +143,10 @@ fun ConsumptionCircle(
             )
         }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.padding(textPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
                 text = "${formatUnits(consumedUnits)} / ${formatUnits(limitUnits)}",
                 style = MaterialTheme.typography.headlineMedium,
@@ -156,11 +184,11 @@ private fun calculateRingProgresses(ratio: Float, numberOfRings: Int): List<Floa
 }
 
 /**
- * Calculate stroke width for each ring.
- * Inner rings are slightly thinner.
+ * Calculate stroke width for each ring based on its visual position.
+ * Outermost rings (higher reversedIndex) are slightly thinner.
  */
-private fun calculateStrokeWidth(ringIndex: Int): Dp {
-    return when (ringIndex) {
+private fun calculateStrokeWidth(reversedIndex: Int): Dp {
+    return when (reversedIndex) {
         0 -> 12.dp
         1 -> 10.dp
         else -> 8.dp
