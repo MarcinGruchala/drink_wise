@@ -1,5 +1,7 @@
 package com.mgruchala.drinkwise.navigaiton
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -25,74 +27,81 @@ import com.mgruchala.drinkwise.presentation.home.HomeScreen
 import com.mgruchala.drinkwise.presentation.settings.SettingsScreen
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    Scaffold(
-        bottomBar = {
-            val backStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = backStackEntry?.destination?.route
+    SharedTransitionLayout {
+        Scaffold(
+            bottomBar = {
+                val backStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = backStackEntry?.destination?.route
 
-            if (currentRoute?.startsWith("day_details") != true) {
-                NavigationBar {
-                    bottomNavigationItems.forEach { bottomNavigationItem ->
-                        val selected = currentRoute == bottomNavigationItem.route.name
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(bottomNavigationItem.route.name) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
+                if (currentRoute?.startsWith("day_details") != true) {
+                    NavigationBar {
+                        bottomNavigationItems.forEach { bottomNavigationItem ->
+                            val selected = currentRoute == bottomNavigationItem.route.name
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    navController.navigate(bottomNavigationItem.route.name) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        restoreState = true
+                                        launchSingleTop = true
                                     }
-                                    restoreState = true
-                                    launchSingleTop = true
+                                },
+                                icon = {
+                                    val iconAssetId = if (selected) {
+                                        bottomNavigationItem.activeIconAssetId
+                                    } else {
+                                        bottomNavigationItem.inactiveIconAssetId
+                                    }
+                                    Icon(
+                                        painter = painterResource(iconAssetId),
+                                        contentDescription = stringResource(bottomNavigationItem.nameRes)
+                                    )
+                                },
+                                label = {
+                                    Text(stringResource(bottomNavigationItem.nameRes))
                                 }
-                            },
-                            icon = {
-                                val iconAssetId = if (selected) {
-                                    bottomNavigationItem.activeIconAssetId
-                                } else {
-                                    bottomNavigationItem.inactiveIconAssetId
-                                }
-                                Icon(
-                                    painter = painterResource(iconAssetId),
-                                    contentDescription = stringResource(bottomNavigationItem.nameRes)
-                                )
-                            },
-                            label = {
-                                Text(stringResource(bottomNavigationItem.nameRes))
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
-        }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = AppRoute.Home.name,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(AppRoute.Home.name) { HomeScreen() }
-            composable(AppRoute.Calendar.name) {
-                CalendarScreen(
-                    onDayClick = { date ->
-                        navController.navigate(AppRoute.DayDetails.createRoute(date.toEpochDay()))
-                    }
-                )
-            }
-            composable(AppRoute.Calculator.name) { AlcoholCalculatorView() }
-            composable(AppRoute.Settings.name) { SettingsScreen() }
-            composable(
-                route = AppRoute.DayDetails.name,
-                arguments = listOf(
-                    navArgument(AppRoute.DayDetails.ARG_EPOCH_DAY) { type = NavType.LongType }
-                )
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = AppRoute.Home.name,
+                modifier = Modifier.padding(innerPadding)
             ) {
-                DayDetailsScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                composable(AppRoute.Home.name) { HomeScreen() }
+                composable(AppRoute.Calendar.name) {
+                    CalendarScreen(
+                        onDayClick = { date ->
+                            navController.navigate(AppRoute.DayDetails.createRoute(date.toEpochDay()))
+                        },
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedVisibilityScope = this@composable
+                    )
+                }
+                composable(AppRoute.Calculator.name) { AlcoholCalculatorView() }
+                composable(AppRoute.Settings.name) { SettingsScreen() }
+                composable(
+                    route = AppRoute.DayDetails.name,
+                    arguments = listOf(
+                        navArgument(AppRoute.DayDetails.ARG_EPOCH_DAY) { type = NavType.LongType }
+                    )
+                ) {
+                    DayDetailsScreen(
+                        onNavigateBack = { navController.popBackStack() },
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedVisibilityScope = this@composable
+                    )
+                }
             }
         }
     }

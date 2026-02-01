@@ -2,7 +2,9 @@ package com.mgruchala.drinkwise.presentation.calendar
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,10 +53,13 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun CalendarScreen(
     onDayClick: (LocalDate) -> Unit = {},
-    viewModel: CalendarViewModel = hiltViewModel()
+    viewModel: CalendarViewModel = hiltViewModel(),
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -65,16 +70,21 @@ fun CalendarScreen(
     } else {
         CalendarScreenContent(
             calendarData = state.calendarData,
-            onDayClick = onDayClick
+            onDayClick = onDayClick,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedVisibilityScope = animatedVisibilityScope
         )
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CalendarScreenContent(
     calendarData: Map<YearMonth, List<CalendarDayData>>,
-    onDayClick: (LocalDate) -> Unit = {}
+    onDayClick: (LocalDate) -> Unit = {},
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null
 ) {
     val sortedMonths = calendarData.keys.sortedDescending()
     val initialPage = 0
@@ -119,7 +129,13 @@ fun CalendarScreenContent(
             ) { page ->
                 val month = sortedMonths[page]
                 val days = calendarData[month] ?: emptyList()
-                MonthCalendar(month, days, onDayClick)
+                MonthCalendar(
+                    month = month,
+                    originalDays = days,
+                    onDayClick = onDayClick,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
             }
         }
     }
@@ -171,11 +187,14 @@ fun MonthNavigationHeader(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun MonthCalendar(
     month: YearMonth,
     originalDays: List<CalendarDayData>,
-    onDayClick: (LocalDate) -> Unit = {}
+    onDayClick: (LocalDate) -> Unit = {},
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null
 ) {
     val daysMap = originalDays.associateBy { it.date.dayOfMonth }
 
@@ -197,7 +216,12 @@ fun MonthCalendar(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         allCells.chunked(7).forEach { weekCells ->
-            WeekRow(weekCells, onDayClick)
+            WeekRow(
+                weekDays = weekCells,
+                onDayClick = onDayClick,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope
+            )
         }
     }
 }
@@ -230,10 +254,13 @@ fun DayOfWeekHeader() {
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun WeekRow(
     weekDays: List<CalendarDayData?>,
-    onDayClick: (LocalDate) -> Unit = {}
+    onDayClick: (LocalDate) -> Unit = {},
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -245,7 +272,9 @@ fun WeekRow(
                 if (dayData != null) {
                     DayCell(
                         dayData = dayData,
-                        onClick = { onDayClick(dayData.date) }
+                        onClick = { onDayClick(dayData.date) },
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 } else {
                     EmptyDayPlaceholder()
@@ -264,10 +293,13 @@ fun EmptyDayPlaceholder() {
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun DayCell(
     dayData: CalendarDayData,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null
 ) {
     val isToday = dayData.date.isEqual(LocalDate.now())
     val backgroundModifier = if (isToday) {
@@ -278,6 +310,9 @@ fun DayCell(
     } else {
         Modifier
     }
+
+    // Create shared element key based on date
+    val sharedElementKey = "day_indicator_${dayData.date.toEpochDay()}"
 
     Box(
         modifier = Modifier
@@ -297,8 +332,21 @@ fun DayCell(
         )
 
         dayData.alcoholUnitLevel?.let {
+            val indicatorModifier = if (sharedTransitionScope != null && animatedVisibilityScope != null) {
+                with(sharedTransitionScope) {
+                    Modifier
+                        .matchParentSize()
+                        .sharedElement(
+                            sharedContentState = rememberSharedContentState(key = sharedElementKey),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                }
+            } else {
+                Modifier.matchParentSize()
+            }
+
             AlcoholUnitLevelProgressIndicator(
-                modifier = Modifier.matchParentSize(),
+                modifier = indicatorModifier,
                 alcoholUnitLevel = it,
                 strokeWidth = 3.dp,
             )
@@ -306,7 +354,7 @@ fun DayCell(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 @Preview(
     showBackground = true,
@@ -321,7 +369,7 @@ fun CalendarScreenPreviewLightTheme() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 @Preview(
     showBackground = true,

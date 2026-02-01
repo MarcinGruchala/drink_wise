@@ -18,7 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mgruchala.alcohol_database.DrinkEntity
@@ -35,11 +38,22 @@ fun DrinkListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     val units = calculateAlcoholUnits(drink.quantity, drink.alcoholContent)
     val formattedUnits = "%.2f".format(units)
     val formattedVolume = formatVolume(drink.quantity)
     val formattedAbv = "%.1f".format(drink.alcoholContent)
     val formattedTime = formatTimestamp(drink.timestamp)
+
+    // Accessibility description for TalkBack
+    val accessibilityDescription = context.getString(
+        R.string.day_details_a11y_drink_item,
+        formattedVolume,
+        formattedTime,
+        formattedAbv,
+        formattedUnits
+    )
 
     Card(
         colors = CardDefaults.cardColors(
@@ -49,6 +63,9 @@ fun DrinkListItem(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
+            .semantics {
+                contentDescription = accessibilityDescription
+            }
     ) {
         Row(
             modifier = Modifier
@@ -58,8 +75,10 @@ fun DrinkListItem(
         ) {
             Icon(
                 imageVector = Icons.Outlined.LocalBar,
-                contentDescription = stringResource(R.string.day_details_drink_icon),
-                modifier = Modifier.size(40.dp),
+                contentDescription = null, // Decorative, covered by card semantics
+                modifier = Modifier
+                    .size(40.dp)
+                    .clearAndSetSemantics { },
                 tint = MaterialTheme.colorScheme.primary
             )
 
