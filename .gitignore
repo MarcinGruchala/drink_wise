@@ -11,6 +11,8 @@
 .DS_Store
 /build
 /captures
+/artifacts/
+/.maestro/
 .externalNativeBuild
 .cxx
 local.properties

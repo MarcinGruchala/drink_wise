@@ -1,0 +1,12 @@
+appId: com.mgruchala.drinkwise.dev
+name: Home Smoke
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Today"
+    timeout: 10000
+- assertVisible: "This Week"
+- takeScreenshot: home-smoke
