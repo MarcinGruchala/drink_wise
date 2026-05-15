@@ -1,0 +1,24 @@
+appId: com.mgruchala.drinkwise.dev
+name: Bottom Navigation Recording
+tags:
+  - navigation
+  - recording
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Today"
+    timeout: 10000
+- startRecording: bottom-navigation
+- tapOn: "Calendar"
+- assertVisible: "Mon"
+- assertVisible: "Sun"
+- tapOn: "Calculator"
+- assertVisible: "Quantity (ml)"
+- assertVisible: "Alcohol content (%)"
+- tapOn: "Settings"
+- assertVisible: "Set your alcohol consumption limits"
+- tapOn: "Home"
+- assertVisible: "Today"
+- stopRecording
+- takeScreenshot: bottom-navigation-final

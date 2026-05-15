@@ -34,3 +34,5 @@ and Navigation Compose.
 - Use Maestro for Android UI verification when changing Compose screens,
   navigation, or user-visible flows. Prefer existing flows under
   `maestro/flows/`; add or update a focused flow for new UI behavior.
+- Use Maestro video recording for animation-heavy or transition-heavy UI
+  changes.

@@ -31,7 +31,13 @@ Use Maestro as the real-device feedback loop for Android UI work. Maestro should
    scripts/android-maestro-run.sh maestro/flows -- --include-tags smoke
    ```
 
-6. Inspect the Maestro output and any screenshots/videos under `artifacts/maestro/` before claiming UI behavior works.
+6. Record transitions or animations with a dedicated recording flow:
+
+   ```bash
+   scripts/android-maestro-run.sh maestro/flows/bottom-navigation-recording.yaml
+   ```
+
+7. Inspect the Maestro output and any screenshots/videos under `artifacts/maestro/` before claiming UI behavior works.
 
 ## Flow Guidance
 
@@ -41,11 +47,21 @@ Use Maestro as the real-device feedback loop for Android UI work. Maestro should
 - Avoid coordinate taps unless there is no accessible selector.
 - Keep flows short and behavior-focused. A new feature normally gets one happy-path flow plus targeted edge flows only when the risk justifies them.
 - Use `takeScreenshot` for important end states.
-- Use `startRecording` and `stopRecording` for animation-heavy or transition-heavy behavior.
+- Use `startRecording` and `stopRecording` for animation-heavy or transition-heavy behavior. Always call `stopRecording` so Maestro finalizes the `.mp4`.
+
+## Reviewing Recordings
+
+- Prefer direct MP4 inspection when the current environment can display video.
+- If direct video inspection is unavailable, generate a contact sheet from the recording and inspect it before reporting:
+
+  ```bash
+  ffmpeg -y -i path/to/recording.mp4 -vf "fps=1,scale=240:-1,tile=5x2" -frames:v 1 path/to/contact-sheet.png
+  ```
 
 ## When Features Change
 
 - Maestro harness/setup changed: run `maestro/flows/home-smoke.yaml`.
+- Navigation, animation, or transition behavior changed: run or adapt `maestro/flows/bottom-navigation-recording.yaml`.
 - Compose layout or screen text changed: run the closest existing flow.
 - New navigation or screen flow added: add a new Maestro flow for that path.
 - Example: for calendar day details, add `maestro/flows/calendar-day-details.yaml` that launches the app, opens Calendar, taps a day, asserts the day details UI, and captures a screenshot.
