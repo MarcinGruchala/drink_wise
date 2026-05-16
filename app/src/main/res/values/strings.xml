@@ -59,4 +59,14 @@
     <!-- Day Details Screen -->
     <string name="day_details_title">Day details</string>
     <string name="day_details_navigate_back">Navigate back</string>
+    <string name="day_details_units_label">units</string>
+    <string name="day_details_over_limit_amount">+%1$s</string>
+    <string name="day_details_consumed_of_limit">%1$s of %2$s</string>
+    <string name="day_details_consumption_indicator_description">%1$s of %2$s units, %3$s percent of daily limit</string>
+    <string name="day_details_consumption_indicator_over_limit_description">%1$s of %2$s units, %3$s percent of daily limit, over daily limit by %4$s units</string>
+    <string name="day_details_drinks_section_title">Drinks</string>
+    <string name="day_details_drink_label">Drink</string>
+    <string name="day_details_no_drinks">No drinks recorded</string>
+    <string name="day_details_drink_item_details">%1$s • %2$s • %3$s units • %4$s</string>
+    <string name="day_details_drink_item_description">%1$s, %2$s alcohol, %3$s units, consumed at %4$s</string>
 </resources>
