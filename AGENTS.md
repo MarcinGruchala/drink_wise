@@ -31,6 +31,8 @@ and Navigation Compose.
 - Repository and data-source APIs use Kotlin `Flow` for reactive data.
 - Use the injected `Clock` abstraction for time-dependent logic.
 - Put all user-visible UI text in `app/src/main/res/values/strings.xml`.
+- Use the `jetpack-compose-android` skill for non-trivial Compose UI changes,
+  reviews, performance work, navigation changes, animations, and accessibility.
 - Use Maestro for Android UI verification when changing Compose screens,
   navigation, or user-visible flows. Prefer existing flows under
   `maestro/flows/`; add or update a focused flow for new UI behavior.
