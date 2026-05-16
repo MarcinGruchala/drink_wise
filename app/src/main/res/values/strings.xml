@@ -55,4 +55,8 @@
     <string name="calendar_day_fri">Fri</string>
     <string name="calendar_day_sat">Sat</string>
     <string name="calendar_day_sun">Sun</string>
+    <string name="calendar_day_content_description">Open details for %1$s</string>
+    <!-- Day Details Screen -->
+    <string name="day_details_title">Day details</string>
+    <string name="day_details_navigate_back">Navigate back</string>
 </resources>
