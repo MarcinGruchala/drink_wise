@@ -36,3 +36,9 @@ and Navigation Compose.
   `maestro/flows/`; add or update a focused flow for new UI behavior.
 - Use Maestro video recording for animation-heavy or transition-heavy UI
   changes.
+- Use Conventional Commits for new commits: `type(scope): description`, with
+  scopes optional and types such as `feat`, `fix`, `docs`, `test`, `refactor`,
+  `chore`, `build`, or `ci`.
+- When asked to create an MR/PR, publish the current branch to GitHub and open
+  a draft pull request. Inspect the worktree first and stage only the intended
+  files.

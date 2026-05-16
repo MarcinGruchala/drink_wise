@@ -1,0 +1,9 @@
+interface:
+  display_name: "GitHub PR Publishing"
+  short_description: "Push branches and open GitHub PRs."
+  default_prompt: "Use $github-pr-publishing to publish this branch as a GitHub pull request."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "github"
+      description: "GitHub connector for pull request creation."
