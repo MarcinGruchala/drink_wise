@@ -1,5 +1,7 @@
 package com.mgruchala.drinkwise.navigaiton
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -27,6 +29,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         bottomBar = {
             val backStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = backStackEntry?.destination?.route
@@ -67,7 +70,9 @@ fun AppNavigation() {
         NavHost(
             navController = navController,
             startDestination = AppRoute.Home.name,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
         ) {
             composable(AppRoute.Home.name) { HomeScreen() }
             composable(AppRoute.Calendar.name) { CalendarScreen() }

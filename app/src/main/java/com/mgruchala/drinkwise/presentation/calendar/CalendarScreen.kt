@@ -1,6 +1,5 @@
 package com.mgruchala.drinkwise.presentation.calendar
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -64,7 +63,6 @@ fun CalendarScreen(
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
     val sortedMonths = calendarData.keys.sortedDescending()
@@ -72,11 +70,12 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
     val pagerState = rememberPagerState(initialPage = initialPage) { sortedMonths.size }
     val coroutineScope = rememberCoroutineScope()
 
-    Scaffold {
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 8.dp)
         ) {
             if (sortedMonths.isNotEmpty()) {
                 MonthNavigationHeader(

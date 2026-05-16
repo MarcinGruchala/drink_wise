@@ -1,6 +1,5 @@
 package com.mgruchala.drinkwise.presentation.home
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,7 +42,6 @@ fun HomeScreen(
     )
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreenContent(
     state: HomeScreenState,
@@ -79,10 +77,11 @@ fun HomeScreenContent(
                 )
             }
         },
-        content = {
+        content = { innerPadding ->
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
+                    .padding(innerPadding)
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
