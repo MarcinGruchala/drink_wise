@@ -120,6 +120,28 @@ behavior needs verification beyond guidance docs:
 6. Use string resources for user-visible text.
 7. Add or update focused tests or Maestro flows when UI behavior changes.
 
+## Project Preferences
+
+- Collect ViewModel state with lifecycle awareness:
+  `val state by viewModel.state.collectAsStateWithLifecycle()`.
+- Keep application state in ViewModels and `StateFlow`. Use local Compose state
+  only for ephemeral UI concerns such as `LazyListState`, `ScrollState`,
+  expanded menus, transient input focus, or visual toggles.
+- Keep screen composables previewable by passing state and event lambdas rather
+  than ViewModels into child composables.
+- Add stable keys to lazy lists when a clear unique identifier exists. Do not
+  invent a fragile key just to satisfy the pattern.
+- Prefer per-frame animations that update layout or draw phases instead of
+  forcing full recomposition. Use `graphicsLayer` for alpha, scale, rotation,
+  and translation when possible, and prefer offset lambdas for animated position.
+- Wrap previews in the app theme and use realistic sample state. Empty-state
+  previews are useful only when they specifically exercise empty UI.
+- Use meaningful `contentDescription` values from string resources for
+  informative or interactive icons/images. Use `null` for decorative visuals.
+- Text input values should come from screen state and report changes through an
+  event lambda or ViewModel method; avoid keeping form state only in composition
+  when the input matters outside the current frame.
+
 ## Key Principles
 
 - Compose runs in composition, layout, and drawing phases. State reads in each

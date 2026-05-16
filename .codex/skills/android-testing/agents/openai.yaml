@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Testing"
+  short_description: "Test Android app changes with JUnit 5."
+  default_prompt: "Use $android-testing to add or review tests for this Android change."

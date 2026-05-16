@@ -33,6 +33,9 @@ and Navigation Compose.
 - Put all user-visible UI text in `app/src/main/res/values/strings.xml`.
 - Use the `jetpack-compose-android` skill for non-trivial Compose UI changes,
   reviews, performance work, navigation changes, animations, and accessibility.
+- Use the `android-testing` skill when adding or updating JVM unit tests,
+  ViewModel/Flow tests, Room/DataStore tests, Compose UI tests, or deciding
+  between local tests, instrumentation, and Maestro flows.
 - Use Maestro for Android UI verification when changing Compose screens,
   navigation, or user-visible flows. Prefer existing flows under
   `maestro/flows/`; add or update a focused flow for new UI behavior.
