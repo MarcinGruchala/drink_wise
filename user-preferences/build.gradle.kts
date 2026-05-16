@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.android.junit)
     kotlin("plugin.serialization") version "2.1.10"
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
@@ -43,7 +44,10 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.material)
-    testImplementation(libs.junit)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.params)
+    testRuntimeOnly(libs.junit.jupiter.engine)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
@@ -51,4 +55,3 @@ dependencies {
 kapt {
     correctErrorTypes = true
 }
-

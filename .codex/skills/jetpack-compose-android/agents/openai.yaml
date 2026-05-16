@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jetpack Compose Android"
+  short_description: "Build and review Android Compose UI."
+  default_prompt: "Use $jetpack-compose-android for this Android Jetpack Compose UI task."

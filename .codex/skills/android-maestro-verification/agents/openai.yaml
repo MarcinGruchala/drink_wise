@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Maestro Verification"
+  short_description: "Verify Android UI flows with Maestro."
+  default_prompt: "Use Maestro to verify an Android app UI flow."
