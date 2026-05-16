@@ -14,7 +14,8 @@ tags:
 - tapOn:
     text: "Open details for .*"
 - assertVisible: "Drinks"
-- assertVisible: ".*of .* units, .* percent of daily limit.*"
+- assertVisible: ".*of 7 units, .* percent of daily limit.*"
+- assertNotVisible: ".*5.6 of 4 units, 140 percent of daily limit, over daily limit by 1.6 units.*"
 - assertNotVisible: "Calendar"
 - takeScreenshot: calendar-day-details-design
 - tapOn: "Navigate back"
