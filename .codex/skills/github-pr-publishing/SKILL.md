@@ -29,8 +29,9 @@ the user says otherwise.
 8. If an open PR already exists for the branch, report or update it instead of
    creating a duplicate.
 9. If both PR creation paths are unavailable, leave the branch pushed and report
-   the GitHub compare URL plus the exact PR title and body to paste. Do not call
-   the compare URL an opened PR or draft.
+   a GitHub compare URL with `quick_pull=1`, `title`, and `body` query
+   parameters when practical. Also include the exact PR title and body to paste.
+   Do not call the compare URL an opened PR or draft.
 
 ## PR Shape
 
