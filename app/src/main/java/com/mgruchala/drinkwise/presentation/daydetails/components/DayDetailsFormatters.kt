@@ -11,7 +11,7 @@ fun formatDayDetailsUnits(value: Float): String {
     return if (roundedToTenth == roundedToTenth.toInt().toFloat()) {
         roundedToTenth.toInt().toString()
     } else {
-        String.format(Locale.getDefault(), "%.1f", roundedToTenth)
+        String.format(Locale.US, "%.1f", roundedToTenth)
     }
 }
 
@@ -21,7 +21,7 @@ fun formatDayDetailsVolume(volumeMl: Int): String {
         if (liters == liters.toInt().toFloat()) {
             "${liters.toInt()} L"
         } else {
-            String.format(Locale.getDefault(), "%.1f L", liters)
+            String.format(Locale.US, "%.1f L", liters)
         }
     } else {
         "$volumeMl ml"
@@ -29,7 +29,7 @@ fun formatDayDetailsVolume(volumeMl: Int): String {
 }
 
 fun formatDayDetailsAbv(abv: Float): String {
-    return String.format(Locale.getDefault(), "%.1f%%", abv)
+    return String.format(Locale.US, "%.1f%%", abv)
 }
 
 fun formatDayDetailsTime(timestamp: Long): String {
