@@ -2,6 +2,7 @@ package com.mgruchala.drinkwise.domain
 
 import com.mgruchala.alcohol_database.DrinkEntity
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 interface DrinksRepository {
 
@@ -16,6 +17,11 @@ interface DrinksRepository {
     fun getAllDrinks(): Flow<List<DrinkEntity>>
 
     /**
+     * Fetches all drinks consumed on a local date, as a Flow.
+     */
+    fun getDrinksForDate(date: LocalDate): Flow<List<DrinkEntity>>
+
+    /**
      * Inserts one or more drinks of same quantity and alcohol content.
      */
     suspend fun addDrinks(vararg drinks: DrinkEntity)
@@ -25,4 +31,3 @@ interface DrinksRepository {
      */
     suspend fun deleteDrink(drink: DrinkEntity): Int
 }
-
