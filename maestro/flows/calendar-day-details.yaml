@@ -1,0 +1,22 @@
+appId: com.mgruchala.drinkwise.dev
+name: Calendar Day Details
+tags:
+  - navigation
+  - day-details
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Today"
+    timeout: 10000
+- tapOn: "Calendar"
+- assertVisible: "Mon"
+- tapOn:
+    text: "Open details for .*"
+- assertVisible: "Drinks"
+- assertVisible: ".*5.6 of 4 units, 140 percent of daily limit, over daily limit by 1.6 units.*"
+- assertNotVisible: "Calendar"
+- takeScreenshot: calendar-day-details-design
+- tapOn: "Navigate back"
+- assertVisible: "Calendar"
+- assertVisible: "Mon"
