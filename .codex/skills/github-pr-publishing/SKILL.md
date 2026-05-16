@@ -13,19 +13,23 @@ the user says otherwise.
 
 ## Workflow
 
-1. Inspect `git status -sb` and the relevant diff before staging.
-2. Keep unrelated local files out of the commit. Use explicit paths when the
+1. Confirm at least one PR creation path works: the GitHub connector has pull
+   request write access for this repo, or `gh auth status` succeeds.
+2. Inspect `git status -sb` and the relevant diff before staging.
+3. Keep unrelated local files out of the commit. Use explicit paths when the
    worktree is mixed.
-3. Use Conventional Commits for new commit messages:
+4. Use Conventional Commits for new commit messages:
    `type(optional-scope): short imperative description`.
    Prefer `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `build`, or `ci`.
    Use `!` or a `BREAKING CHANGE:` footer for breaking changes.
-4. Run the most relevant verification for the changed surface.
-5. Push the current branch with tracking.
-6. Create a draft GitHub PR by default. Prefer the GitHub connector; use `gh pr`
+5. Run the most relevant verification for the changed surface.
+6. Push the current branch with tracking.
+7. Create a draft GitHub PR by default. Prefer the GitHub connector; use `gh pr`
    only when connector creation cannot infer the repo or branch cleanly.
-7. If an open PR already exists for the branch, report or update it instead of
+8. If an open PR already exists for the branch, report or update it instead of
    creating a duplicate.
+9. If both PR creation paths are unavailable, leave the branch pushed and report
+   the GitHub compare URL the user can open after re-authenticating.
 
 ## PR Shape
 
