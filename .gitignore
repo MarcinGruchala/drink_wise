@@ -13,6 +13,7 @@
 /captures
 /artifacts/
 /.maestro/
+/.codex/config.toml
 .externalNativeBuild
 .cxx
 local.properties
