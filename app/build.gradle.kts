@@ -1,4 +1,3 @@
-import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -12,8 +11,17 @@ plugins {
 }
 
 val keystorePropertiesFile = rootProject.file("keystore.properties")
-val keystoreProperties = Properties()
-keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+val hasReleaseKeystore = keystorePropertiesFile.isFile
+val keystoreProperties = Properties().apply {
+    if (hasReleaseKeystore) {
+        keystorePropertiesFile.inputStream().use { load(it) }
+    }
+}
+
+fun requireKeystoreProperty(name: String): String =
+    requireNotNull(keystoreProperties.getProperty(name)) {
+        "Missing '$name' in ${keystorePropertiesFile.path}"
+    }
 
 android {
     namespace = "com.mgruchala.drinkwise"
@@ -30,11 +38,13 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+        if (hasReleaseKeystore) {
+            create("release") {
+                keyAlias = requireKeystoreProperty("keyAlias")
+                keyPassword = requireKeystoreProperty("keyPassword")
+                storeFile = file(requireKeystoreProperty("storeFile"))
+                storePassword = requireKeystoreProperty("storePassword")
+            }
         }
     }
 
@@ -50,7 +60,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {
