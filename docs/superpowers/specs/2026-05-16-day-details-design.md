@@ -139,7 +139,7 @@ The Day Details screen should provide:
 
 ## Testing And Verification
 
-Use `android-testing` when adding tests.
+Use `android-testing` when adding JVM tests and `android-maestro-verification` for the end-to-end UI flow.
 
 Reasonable tests for the full implementation:
 
@@ -152,7 +152,12 @@ Verification:
 
 - run `./gradlew test`,
 - run a debug build task rather than release build,
-- use Maestro for UI verification if an emulator/device is available, especially after navigation and visible screen behavior are wired.
+- add a focused Maestro flow at `maestro/flows/calendar-day-details.yaml`,
+- run `scripts/android-maestro-run.sh maestro/flows/calendar-day-details.yaml` on the simulator,
+- have the Maestro flow open the app, navigate to Calendar, tap a day, assert the Day Details screen, navigate back, and capture a screenshot of the details state,
+- inspect Maestro output and artifacts before claiming the UI flow works.
+
+The feature should expose stable visible text or content descriptions for the calendar day cells, Day Details title/date, back navigation, indicator, and drink list so the Maestro flow does not rely on fragile coordinate taps.
 
 ## Out Of Scope
 
@@ -174,3 +179,4 @@ Verification:
 - Final implementation uses real selected-date drinks and daily limit.
 - Over-limit days show the v1a attached overflow badge.
 - Temporary mock data is removed before final completion.
+- `maestro/flows/calendar-day-details.yaml` verifies the Calendar -> Day Details -> back flow on the simulator.
