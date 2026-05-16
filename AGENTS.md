@@ -31,6 +31,12 @@ and Navigation Compose.
 - Repository and data-source APIs use Kotlin `Flow` for reactive data.
 - Use the injected `Clock` abstraction for time-dependent logic.
 - Put all user-visible UI text in `app/src/main/res/values/strings.xml`.
+- Use the `material-3` skill for Material Design 3 design-system work:
+  color roles, typography, shape, tonal elevation, adaptive layout,
+  component selection, theming, M3 Expressive, and MD3 compliance audits.
+- Pair `material-3` with `jetpack-compose-android` for non-trivial Android
+  Compose UI implementation so MD3 guidance is grounded in current Compose
+  APIs and this app's architecture.
 - Use the `jetpack-compose-android` skill for non-trivial Compose UI changes,
   reviews, performance work, navigation changes, animations, and accessibility.
 - Use the `android-testing` skill when adding or updating JVM unit tests,
