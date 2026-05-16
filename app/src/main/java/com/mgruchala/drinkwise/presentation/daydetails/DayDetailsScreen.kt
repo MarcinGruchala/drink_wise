@@ -18,34 +18,38 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.mgruchala.alcohol_database.DrinkEntity
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.mgruchala.drinkwise.R
-import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.daydetails.components.DayConsumptionIndicator
 import com.mgruchala.drinkwise.presentation.daydetails.components.DrinkListItem
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private val sampleDayDetailsDrinks = listOf(
-    DrinkEntity(uid = 1, quantity = 500, alcoholContent = 5.2f, timestamp = 1_779_020_400_000L),
-    DrinkEntity(uid = 2, quantity = 150, alcoholContent = 13.0f, timestamp = 1_779_016_800_000L),
-    DrinkEntity(uid = 3, quantity = 330, alcoholContent = 4.8f, timestamp = 1_779_013_200_000L)
-)
+@Composable
+fun DayDetailsScreen(
+    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: DayDetailsViewModel = hiltViewModel()
+) {
+    val state by viewModel.state.collectAsState()
 
-private val sampleDayDetailsLevel = AlcoholUnitLevel.fromUnitCount(
-    unitCount = 5.6f,
-    limit = 4f
-)
+    DayDetailsContent(
+        state = state,
+        onNavigateBack = onNavigateBack,
+        modifier = modifier
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DayDetailsScreen(
-    selectedDate: LocalDate,
+private fun DayDetailsContent(
+    state: DayDetailsState,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -56,7 +60,7 @@ fun DayDetailsScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = selectedDate.format(formatter))
+                    Text(text = state.selectedDate.format(formatter))
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
@@ -81,7 +85,7 @@ fun DayDetailsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    DayConsumptionIndicator(alcoholUnitLevel = sampleDayDetailsLevel)
+                    DayConsumptionIndicator(alcoholUnitLevel = state.alcoholUnitLevel)
                 }
             }
             item {
@@ -90,8 +94,17 @@ fun DayDetailsScreen(
                     style = MaterialTheme.typography.titleLarge
                 )
             }
-            items(sampleDayDetailsDrinks, key = { it.uid }) { drink ->
-                DrinkListItem(drink = drink)
+            if (state.drinks.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.day_details_no_drinks),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            } else {
+                items(state.drinks, key = { it.uid }) { drink ->
+                    DrinkListItem(drink = drink)
+                }
             }
         }
     }

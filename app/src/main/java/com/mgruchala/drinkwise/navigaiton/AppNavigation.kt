@@ -25,7 +25,6 @@ import com.mgruchala.drinkwise.presentation.calendar.CalendarScreen
 import com.mgruchala.drinkwise.presentation.daydetails.DayDetailsScreen
 import com.mgruchala.drinkwise.presentation.home.HomeScreen
 import com.mgruchala.drinkwise.presentation.settings.SettingsScreen
-import java.time.LocalDate
 
 
 @Composable
@@ -96,11 +95,8 @@ fun AppNavigation() {
                 arguments = listOf(
                     navArgument(AppRoute.DayDetails.ARG_EPOCH_DAY) { type = NavType.LongType }
                 )
-            ) { backStackEntry ->
-                val epochDay = backStackEntry.arguments?.getLong(AppRoute.DayDetails.ARG_EPOCH_DAY)
-                    ?: LocalDate.now().toEpochDay()
+            ) {
                 DayDetailsScreen(
-                    selectedDate = LocalDate.ofEpochDay(epochDay),
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
