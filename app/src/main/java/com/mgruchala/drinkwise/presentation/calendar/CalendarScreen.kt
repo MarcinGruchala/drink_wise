@@ -1,9 +1,9 @@
 package com.mgruchala.drinkwise.presentation.calendar
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -33,6 +34,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
@@ -47,10 +52,12 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
 
 @Composable
 fun CalendarScreen(
+    onDayClick: (LocalDate) -> Unit = {},
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -60,23 +67,29 @@ fun CalendarScreen(
             CircularProgressIndicator()
         }
     } else {
-        CalendarScreenContent(calendarData = state.calendarData)
+        CalendarScreenContent(
+            calendarData = state.calendarData,
+            onDayClick = onDayClick
+        )
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
+fun CalendarScreenContent(
+    calendarData: Map<YearMonth, List<CalendarDayData>>,
+    onDayClick: (LocalDate) -> Unit = {}
+) {
     val sortedMonths = calendarData.keys.sortedDescending()
     val initialPage = 0
     val pagerState = rememberPagerState(initialPage = initialPage) { sortedMonths.size }
     val coroutineScope = rememberCoroutineScope()
 
-    Scaffold {
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 8.dp)
         ) {
             if (sortedMonths.isNotEmpty()) {
                 MonthNavigationHeader(
@@ -110,7 +123,11 @@ fun CalendarScreenContent(calendarData: Map<YearMonth, List<CalendarDayData>>) {
             ) { page ->
                 val month = sortedMonths[page]
                 val days = calendarData[month] ?: emptyList()
-                MonthCalendar(month, days)
+                MonthCalendar(
+                    month = month,
+                    originalDays = days,
+                    onDayClick = onDayClick
+                )
             }
         }
     }
@@ -163,7 +180,11 @@ fun MonthNavigationHeader(
 }
 
 @Composable
-fun MonthCalendar(month: YearMonth, originalDays: List<CalendarDayData>) {
+fun MonthCalendar(
+    month: YearMonth,
+    originalDays: List<CalendarDayData>,
+    onDayClick: (LocalDate) -> Unit = {}
+) {
     val daysMap = originalDays.associateBy { it.date.dayOfMonth }
 
     val allDaysOfMonth = (1..month.lengthOfMonth()).map { dayOfMonth ->
@@ -184,7 +205,10 @@ fun MonthCalendar(month: YearMonth, originalDays: List<CalendarDayData>) {
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         allCells.chunked(7).forEach { weekCells ->
-            WeekRow(weekCells)
+            WeekRow(
+                weekDays = weekCells,
+                onDayClick = onDayClick
+            )
         }
     }
 }
@@ -218,7 +242,10 @@ fun DayOfWeekHeader() {
 }
 
 @Composable
-fun WeekRow(weekDays: List<CalendarDayData?>) {
+fun WeekRow(
+    weekDays: List<CalendarDayData?>,
+    onDayClick: (LocalDate) -> Unit = {}
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -227,7 +254,10 @@ fun WeekRow(weekDays: List<CalendarDayData?>) {
             val dayData = if (index < weekDays.size) weekDays[index] else null
             Box(modifier = Modifier.weight(1f)) {
                 if (dayData != null) {
-                    DayCell(dayData)
+                    DayCell(
+                        dayData = dayData,
+                        onClick = { onDayClick(dayData.date) }
+                    )
                 } else {
                     EmptyDayPlaceholder()
                 }
@@ -246,8 +276,16 @@ fun EmptyDayPlaceholder() {
 }
 
 @Composable
-fun DayCell(dayData: CalendarDayData) {
+fun DayCell(
+    dayData: CalendarDayData,
+    onClick: () -> Unit = {}
+) {
     val isToday = dayData.date.isEqual(LocalDate.now())
+    val dayDescriptionFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
+    val dayContentDescription = stringResource(
+        id = R.string.calendar_day_content_description,
+        dayData.date.format(dayDescriptionFormatter)
+    )
     val backgroundModifier = if (isToday) {
         Modifier.background(
             color = MaterialTheme.colorScheme.tertiaryContainer,
@@ -261,23 +299,34 @@ fun DayCell(dayData: CalendarDayData) {
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .padding(2.dp)
-            .then(backgroundModifier),
-        contentAlignment = Alignment.Center
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
+            .semantics {
+                contentDescription = dayContentDescription
+                role = Role.Button
+            },
     ) {
-        Text(
-            text = dayData.date.dayOfMonth.toString(),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-            color = if (isToday) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        dayData.alcoholUnitLevel?.let {
-            AlcoholUnitLevelProgressIndicator(
-                modifier = Modifier.matchParentSize(),
-                alcoholUnitLevel = it,
-                strokeWidth = 3.dp,
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .padding(2.dp)
+                .then(backgroundModifier),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = dayData.date.dayOfMonth.toString(),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                color = if (isToday) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            dayData.alcoholUnitLevel?.let {
+                AlcoholUnitLevelProgressIndicator(
+                    modifier = Modifier.matchParentSize(),
+                    alcoholUnitLevel = it,
+                    strokeWidth = 3.dp,
+                )
+            }
         }
     }
 }

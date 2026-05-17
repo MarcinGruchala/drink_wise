@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -43,15 +44,17 @@ fun AlcoholCalculatorView(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsState()
-    AlcoholCalculatorContent(
-        modifier = modifier,
-        state = state,
-        onQuantityChanged = viewModel::onQuantityChanged,
-        onPercentageChanged = viewModel::onPercentageChanged,
-        onNumberDecrement = viewModel::onDecrement,
-        onNumberIncrement = viewModel::onIncrement,
-        isInDialog = false
-    )
+    Scaffold { innerPadding ->
+        AlcoholCalculatorContent(
+            modifier = modifier.padding(innerPadding),
+            state = state,
+            onQuantityChanged = viewModel::onQuantityChanged,
+            onPercentageChanged = viewModel::onPercentageChanged,
+            onNumberDecrement = viewModel::onDecrement,
+            onNumberIncrement = viewModel::onIncrement,
+            isInDialog = false
+        )
+    }
 }
 
 @Composable

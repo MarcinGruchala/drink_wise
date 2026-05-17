@@ -118,7 +118,10 @@ behavior needs verification beyond guidance docs:
 5. Keep ViewModels at screen boundaries; avoid passing ViewModel instances into
    child composables.
 6. Use string resources for user-visible text.
-7. Add or update focused tests or Maestro flows when UI behavior changes.
+7. Add or update a `@Preview` for every Compose UI file you touch, using
+   realistic sample state in the app theme. If the file is only non-visual
+   helpers, note that exception before finishing.
+8. Add or update focused tests or Maestro flows when UI behavior changes.
 
 ## Project Preferences
 
@@ -129,6 +132,10 @@ behavior needs verification beyond guidance docs:
   expanded menus, transient input focus, or visual toggles.
 - Keep screen composables previewable by passing state and event lambdas rather
   than ViewModels into child composables.
+- Treat previews as part of Compose UI implementation, not a follow-up. New or
+  meaningfully changed screens, sections, dialogs, list rows, empty states, and
+  error states should get matching previews in the same file or a nearby preview
+  file that follows existing project patterns.
 - Add stable keys to lazy lists when a clear unique identifier exists. Do not
   invent a fragile key just to satisfy the pattern.
 - Prefer per-frame animations that update layout or draw phases instead of

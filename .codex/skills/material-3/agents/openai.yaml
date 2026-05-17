@@ -1,0 +1,4 @@
+interface:
+  display_name: "Material Design 3"
+  short_description: "Apply MD3 tokens, components, theming, layout, and audits."
+  default_prompt: "Use $material-3 for Material Design 3 guidance, and pair it with $jetpack-compose-android for Android Compose implementation."
