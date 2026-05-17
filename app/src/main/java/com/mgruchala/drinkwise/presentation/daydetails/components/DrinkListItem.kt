@@ -1,5 +1,6 @@
 package com.mgruchala.drinkwise.presentation.daydetails.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.outlined.LocalBar
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,10 +21,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.R
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Composable
 fun DrinkListItem(
@@ -81,3 +88,50 @@ fun DrinkListItem(
         HorizontalDivider()
     }
 }
+
+@Preview(
+    name = "Light",
+    showBackground = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Composable
+fun DrinkListItemPreviewLightTheme() {
+    DrinkListItemPreview(darkTheme = false)
+}
+
+@Preview(
+    name = "Dark",
+    showBackground = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun DrinkListItemPreviewDarkTheme() {
+    DrinkListItemPreview(darkTheme = true)
+}
+
+@Composable
+private fun DrinkListItemPreview(darkTheme: Boolean) {
+    DrinkWiseTheme(darkTheme = darkTheme) {
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ) {
+            DrinkListItem(
+                drink = previewDrink,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+    }
+}
+
+private val previewDrink = DrinkEntity(
+    uid = 1,
+    quantity = 500,
+    alcoholContent = 5f,
+    timestamp = LocalDateTime.of(2026, 5, 17, 18, 30)
+        .atZone(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+)
