@@ -18,6 +18,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
@@ -41,6 +42,19 @@ import kotlin.math.sin
 
 private const val START_ANGLE_DEGREES = -90f
 private val IndicatorStrokeWidth = 12.dp
+
+internal fun calculateConsumptionIndicatorBaseProgress(ratio: Float): Float {
+    return ratio.coerceIn(0f, 1f)
+}
+
+internal fun calculateConsumptionIndicatorOverflowProgress(ratio: Float): Float {
+    if (ratio <= 1f) {
+        return 0f
+    }
+
+    val currentLapProgress = ratio - floor(ratio)
+    return if (currentLapProgress == 0f) 1f else currentLapProgress
+}
 
 @Composable
 fun DayConsumptionIndicator(
@@ -95,8 +109,6 @@ fun DayConsumptionIndicator(
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                // Required for BlendMode.Clear to punch a transparent hole only
-                // through the elements drawn in this canvas, not through the whole screen.
                 .graphicsLayer { alpha = 0.99f }
         ) {
             val preferredStrokeWidth = IndicatorStrokeWidth.toPx()
@@ -106,77 +118,44 @@ fun DayConsumptionIndicator(
             }
 
             if (ratio <= 1f) {
-                // Base cycle (0% - 100%)
                 drawCircle(
                     color = trackColor,
                     radius = outerRadius,
                     style = Stroke(width = preferredStrokeWidth)
                 )
 
-                val clampedProgress = ratio.coerceIn(0f, 1f)
-                if (clampedProgress >= 1f) {
-                    drawCircle(
-                        color = levelColor,
-                        radius = outerRadius,
-                        style = Stroke(width = preferredStrokeWidth)
-                    )
-                } else if (clampedProgress > 0f) {
-                    drawArc(
-                        color = levelColor,
-                        startAngle = START_ANGLE_DEGREES,
-                        sweepAngle = 360f * clampedProgress,
-                        useCenter = false,
-                        topLeft = Offset(center.x - outerRadius, center.y - outerRadius),
-                        size = Size(outerRadius * 2f, outerRadius * 2f),
-                        style = Stroke(width = preferredStrokeWidth, cap = StrokeCap.Round)
-                    )
-                }
+                drawConsumptionProgress(
+                    color = levelColor,
+                    radius = outerRadius,
+                    strokeWidth = preferredStrokeWidth,
+                    progress = calculateConsumptionIndicatorBaseProgress(ratio)
+                )
             } else {
-                // Overflow cycles (> 100%)
-                // Draw the underlying completed cycle in the exact same solid levelColor
                 drawCircle(
                     color = levelColor,
                     radius = outerRadius,
                     style = Stroke(width = preferredStrokeWidth)
                 )
 
-                val remainder = ratio - floor(ratio)
-                val progressToDraw = if (remainder == 0f && ratio > 0f) 1f else remainder
-
-                if (progressToDraw >= 1f) {
-                    // Perfectly landed on a completed lap (e.g., 200%, 300%)
-                    drawCircle(
-                        color = levelColor,
-                        radius = outerRadius,
-                        style = Stroke(width = preferredStrokeWidth)
-                    )
-                } else if (progressToDraw > 0f) {
-                    // Calculate the coordinates of the head (the moving end of the progress arc)
-                    val endAngleDegrees = START_ANGLE_DEGREES + (360f * progressToDraw)
+                val overflowProgress = calculateConsumptionIndicatorOverflowProgress(ratio)
+                if (overflowProgress > 0f && overflowProgress < 1f) {
+                    val endAngleDegrees = START_ANGLE_DEGREES + (360f * overflowProgress)
                     val endAngleRad = Math.toRadians(endAngleDegrees.toDouble())
                     val headX = center.x + outerRadius * cos(endAngleRad).toFloat()
                     val headY = center.y + outerRadius * sin(endAngleRad).toFloat()
 
-                    // Punch a transparent circular cutout exactly at the head of the progress.
-                    // The cutout is slightly larger than the stroke width to provide the visual padding.
                     drawCircle(
-                        color = Color.Black, // Color is ignored by BlendMode.Clear
+                        color = Color.Black,
                         radius = (preferredStrokeWidth / 2f) + 4.dp.toPx(),
                         center = Offset(headX, headY),
                         blendMode = BlendMode.Clear
                     )
 
-                    // Draw the active overflow progress.
-                    // Since it's drawn after the cutout, its rounded cap sits over the trailing
-                    // half of the hole we just punched, leaving a crisp crescent gap directly AHEAD of it.
-                    drawArc(
+                    drawConsumptionProgress(
                         color = levelColor,
-                        startAngle = START_ANGLE_DEGREES,
-                        sweepAngle = 360f * progressToDraw,
-                        useCenter = false,
-                        topLeft = Offset(center.x - outerRadius, center.y - outerRadius),
-                        size = Size(outerRadius * 2f, outerRadius * 2f),
-                        style = Stroke(width = preferredStrokeWidth, cap = StrokeCap.Round)
+                        radius = outerRadius,
+                        strokeWidth = preferredStrokeWidth,
+                        progress = overflowProgress
                     )
                 }
             }
@@ -214,6 +193,31 @@ fun DayConsumptionIndicator(
                 color = textColor
             )
         }
+    }
+}
+
+private fun DrawScope.drawConsumptionProgress(
+    color: Color,
+    radius: Float,
+    strokeWidth: Float,
+    progress: Float
+) {
+    when {
+        progress >= 1f -> drawCircle(
+            color = color,
+            radius = radius,
+            style = Stroke(width = strokeWidth)
+        )
+
+        progress > 0f -> drawArc(
+            color = color,
+            startAngle = START_ANGLE_DEGREES,
+            sweepAngle = 360f * progress,
+            useCenter = false,
+            topLeft = Offset(center.x - radius, center.y - radius),
+            size = Size(radius * 2f, radius * 2f),
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        )
     }
 }
 
