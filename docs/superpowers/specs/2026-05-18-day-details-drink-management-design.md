@@ -64,6 +64,7 @@ Deleting a drink:
 - In edit mode, `Delete` does not delete immediately.
 - Tapping `Delete` switches the bottom sheet into an inline confirmation state.
 - Confirming delete closes the sheet, removes the drink, updates Day Details immediately, and shows a snackbar on Day Details.
+- Swiping a drink row deletes immediately and shows the same snackbar on Day Details.
 - The snackbar says that the drink was deleted and offers `Undo`.
 - Tapping `Undo` restores the deleted drink with its original quantity, ABV, and timestamp.
 
@@ -79,6 +80,8 @@ Day Details screen:
 - Empty days keep a text-only empty state, such as `No drinks recorded`.
 - Drink rows remain visually simple: leading drink icon, generic `Drink` label, details text, and no trailing edit/delete actions.
 - The entire drink row is tappable in edit mode.
+- Drink rows support swipe-to-delete. Swiping exposes a destructive delete background and then deletes the row immediately.
+- Swipe-to-delete must not conflict with the row tap target for editing.
 
 Drink editor sheet:
 
@@ -99,11 +102,14 @@ Delete confirmation:
 - The confirmation state clearly asks whether to delete the drink.
 - It has a non-destructive cancel action and a destructive confirm action.
 - Cancel returns to the normal edit state without closing the sheet.
+- This confirmation applies only to the explicit `Delete` action in the edit sheet.
+- Swipe-to-delete skips confirmation and relies on snackbar undo.
 
 Accessibility:
 
 - The FAB has a content description such as `Add drink`.
 - Drink rows expose button semantics and a label such as `Edit drink, 175 ml, 13.5 percent alcohol, 2.4 units, consumed at 20:15`.
+- Swipe-to-delete exposes an accessible delete action where Compose APIs support it, and the visible undo snackbar provides recovery after deletion.
 - Decorative icons use `contentDescription = null`.
 - Interactive controls meet the 48dp minimum touch target.
 - Delete confirmation and snackbar actions are reachable with accessibility services.
@@ -128,7 +134,7 @@ Timestamp rules:
 
 Undo rules:
 
-- Confirmed delete stores the deleted `DrinkEntity` long enough to offer snackbar undo.
+- Confirmed sheet delete and swipe-to-delete both store the deleted `DrinkEntity` long enough to offer snackbar undo.
 - Undo reinserts the original entity data.
 - If Room auto-generation or conflict handling requires a new `uid`, the visible behavior still restores the same quantity, ABV, timestamp, totals, and list row content.
 
@@ -158,6 +164,7 @@ The drink editor bottom sheet and time picker are local UI surfaces launched fro
 
 - Last drink deleted: the list changes to the text-only empty state, the indicator drops to zero, and snackbar undo remains available.
 - Delete canceled: the sheet returns to edit mode and the drink is unchanged.
+- Swipe-to-delete: the drink is removed immediately, the Day Details totals update, and snackbar undo is shown.
 - Undo after delete: the drink returns with the original quantity, ABV, and timestamp.
 - Edit changes totals: row details, total units, and indicator update immediately after save.
 - Add on a past day: timestamp uses the selected date plus current clock time unless the user changes time in the picker.
@@ -197,6 +204,7 @@ Maestro:
 - Tap the row, edit drink details, save, and verify updated values are visible.
 - Delete the drink, confirm inline, verify it disappears and totals update.
 - Tap snackbar `Undo` and verify the drink returns.
+- Swipe a drink row to delete it, verify it disappears and snackbar `Undo` restores it.
 - Confirm a final delete path if needed to verify the empty-state transition.
 
 Prefer visible text, content descriptions, and stable semantics over coordinate taps.
@@ -212,6 +220,7 @@ Prefer visible text, content descriptions, and stable semantics over coordinate 
 - Edit mode keeps the drink on the selected Day Details date.
 - Delete requires inline confirmation inside the sheet.
 - Confirmed delete closes the sheet, updates the Day Details UI, and shows snackbar undo.
+- Swiping a drink row deletes immediately and shows snackbar undo.
 - Undo restores the deleted drink.
 - Last-drink deletion shows the text-only empty state and a zeroed indicator.
 - The existing Calendar to Day Details navigation remains unchanged.
@@ -224,7 +233,6 @@ Prefer visible text, content descriptions, and stable semantics over coordinate 
 - Moving a drink to another date.
 - Drink names, categories, icons, or presets.
 - Full-screen add/edit navigation.
-- Swipe-to-delete.
 - Alert-dialog delete confirmation.
 - Release builds or signing changes.
 - Large navigation, data-layer, or design-system refactors.
