@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Delete
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,6 +21,9 @@ interface DrinkDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDrinks(drinks: List<DrinkEntity>)
+
+    @Update
+    suspend fun updateDrink(drink: DrinkEntity): Int
 
     @Delete
     suspend fun deleteDrink(drink: DrinkEntity): Int

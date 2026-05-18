@@ -29,7 +29,9 @@ class DrinksRepositoryImpl(
     override suspend fun addDrinks(vararg drinks: DrinkEntity) {
         drinkDao.insertDrinks(drinks.toList())
     }
-    
+
+    override suspend fun updateDrink(drink: DrinkEntity): Int = drinkDao.updateDrink(drink)
+
     override suspend fun deleteDrink(drink: DrinkEntity): Int {
         return drinkDao.deleteDrink(drink)
     }

@@ -27,6 +27,11 @@ interface DrinksRepository {
     suspend fun addDrinks(vararg drinks: DrinkEntity)
 
     /**
+     * Updates an existing drink in the database.
+     */
+    suspend fun updateDrink(drink: DrinkEntity): Int
+
+    /**
      * Deletes a drink from the database.
      */
     suspend fun deleteDrink(drink: DrinkEntity): Int
