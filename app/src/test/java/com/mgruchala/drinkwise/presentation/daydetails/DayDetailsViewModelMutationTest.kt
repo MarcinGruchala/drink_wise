@@ -5,6 +5,7 @@ import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.navigaiton.AppRoute
 import com.mgruchala.drinkwise.presentation.daydetails.editor.composeDrinkTimestamp
+import com.mgruchala.drinkwise.utils.time.Clock
 import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferences
 import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesDataSource
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -29,6 +31,12 @@ class DayDetailsViewModelMutationTest {
 
     private val selectedDate = LocalDate.of(2026, 5, 17)
     private val zoneId = ZoneId.systemDefault()
+    private val fakeClock = FakeClock(
+        nowMillis = LocalDateTime.of(2026, 5, 18, 14, 37)
+            .atZone(zoneId)
+            .toInstant()
+            .toEpochMilli()
+    )
     private val testDispatcher = StandardTestDispatcher()
 
     @Test
@@ -119,6 +127,16 @@ class DayDetailsViewModelMutationTest {
         assertEquals(0, repository.addedDrinks.size)
     }
 
+    @Test
+    fun `create add draft uses injected clock`() {
+        val repository = FakeDrinksRepository()
+        val viewModel = createViewModel(repository)
+
+        val draft = viewModel.createAddDraft()
+
+        assertEquals(LocalTime.of(14, 37), draft.time)
+    }
+
     @BeforeEach
     fun setMainDispatcher() {
         Dispatchers.setMain(testDispatcher)
@@ -135,8 +153,13 @@ class DayDetailsViewModelMutationTest {
                 mapOf(AppRoute.DayDetails.ARG_EPOCH_DAY to selectedDate.toEpochDay())
             ),
             drinksRepository = repository,
-            alcoholLimitPreferencesDataSource = FakeAlcoholLimitPreferencesDataSource()
+            alcoholLimitPreferencesDataSource = FakeAlcoholLimitPreferencesDataSource(),
+            clock = fakeClock
         )
+    }
+
+    private class FakeClock(private val nowMillis: Long) : Clock {
+        override fun nowMillis(): Long = nowMillis
     }
 
     private class FakeDrinksRepository(

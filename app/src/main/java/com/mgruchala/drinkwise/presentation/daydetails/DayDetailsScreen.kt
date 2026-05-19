@@ -78,6 +78,7 @@ fun DayDetailsScreen(
         onUpdateDrink = viewModel::updateDrink,
         onDeleteDrink = viewModel::deleteDrink,
         onUndoDelete = viewModel::undoLastDeletedDrink,
+        createAddDraft = viewModel::createAddDraft,
         modifier = modifier
     )
 }
@@ -101,6 +102,7 @@ private fun DayDetailsContent(
     onUpdateDrink: (original: DrinkEntity, quantityMl: Int, abv: Float, time: LocalTime) -> Unit,
     onDeleteDrink: (DrinkEntity) -> Unit,
     onUndoDelete: () -> Unit,
+    createAddDraft: () -> DrinkEditorDraft,
     modifier: Modifier = Modifier
 ) {
     val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.getDefault())
@@ -130,7 +132,7 @@ private fun DayDetailsContent(
             FloatingActionButton(
                 onClick = {
                     editorState = DrinkEditorUiState.Add(
-                        draft = DrinkEditorDraft.forAdd(System.currentTimeMillis())
+                        draft = createAddDraft()
                     )
                 }
             ) {
@@ -346,7 +348,8 @@ fun DayDetailsContentPreviewLightTheme() {
             onAddDrinks = { _, _, _, _ -> },
             onUpdateDrink = { _, _, _, _ -> },
             onDeleteDrink = {},
-            onUndoDelete = {}
+            onUndoDelete = {},
+            createAddDraft = ::previewAddDraft
         )
     }
 }
@@ -366,7 +369,8 @@ fun DayDetailsContentPreviewDarkTheme() {
             onAddDrinks = { _, _, _, _ -> },
             onUpdateDrink = { _, _, _, _ -> },
             onDeleteDrink = {},
-            onUndoDelete = {}
+            onUndoDelete = {},
+            createAddDraft = ::previewAddDraft
         )
     }
 }
@@ -390,10 +394,18 @@ fun DayDetailsContentEmptyPreview() {
             onAddDrinks = { _, _, _, _ -> },
             onUpdateDrink = { _, _, _, _ -> },
             onDeleteDrink = {},
-            onUndoDelete = {}
+            onUndoDelete = {},
+            createAddDraft = ::previewAddDraft
         )
     }
 }
+
+private fun previewAddDraft() = DrinkEditorDraft(
+    quantityMlText = "",
+    abvText = "",
+    numberOfDrinksText = "1",
+    time = LocalTime.of(12, 0)
+)
 
 private val dayDetailsPreviewState = DayDetailsState(
     selectedDate = LocalDate.of(2026, 5, 17),

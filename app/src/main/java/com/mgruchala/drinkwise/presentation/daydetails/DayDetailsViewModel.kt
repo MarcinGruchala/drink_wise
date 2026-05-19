@@ -7,8 +7,10 @@ import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.navigaiton.AppRoute
+import com.mgruchala.drinkwise.presentation.daydetails.editor.DrinkEditorDraft
 import com.mgruchala.drinkwise.presentation.daydetails.editor.composeDrinkTimestamp
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
+import com.mgruchala.drinkwise.utils.time.Clock
 import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,7 +26,8 @@ import javax.inject.Inject
 class DayDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val drinksRepository: DrinksRepository,
-    alcoholLimitPreferencesDataSource: AlcoholLimitPreferencesDataSource
+    alcoholLimitPreferencesDataSource: AlcoholLimitPreferencesDataSource,
+    private val clock: Clock
 ) : ViewModel() {
 
     private val selectedDate = LocalDate.ofEpochDay(
@@ -74,6 +77,9 @@ class DayDetailsViewModel @Inject constructor(
             drinksRepository.addDrinks(*drinks.toTypedArray())
         }
     }
+
+    fun createAddDraft(): DrinkEditorDraft =
+        DrinkEditorDraft.forAdd(currentTimeMillis = clock.nowMillis())
 
     fun updateDrink(
         original: DrinkEntity,
