@@ -326,9 +326,11 @@ private fun SwipeToDeleteDrinkItem(
         DrinkListItem(
             drink = drink,
             onClick = onClick,
-            modifier = Modifier.semantics {
-                customActions = listOf(deleteAction)
-            }
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .semantics {
+                    customActions = listOf(deleteAction)
+                }
         )
     }
 }
