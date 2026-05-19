@@ -13,7 +13,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelAlarming
 import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelHigh
@@ -25,6 +24,9 @@ import kotlin.math.sin
 
 private const val StartAngleDegrees = -90f
 private const val MinimumAlcoholUnitIndicatorLimit = 0.1f
+
+// Extra clear radius as a fraction of indicator diameter; 4dp on the 220dp details ring.
+const val AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction = 0.018181818f
 
 internal fun calculateAlcoholUnitIndicatorSafeLimit(limit: Float): Float {
     return limit.coerceAtLeast(MinimumAlcoholUnitIndicatorLimit)
@@ -47,6 +49,16 @@ internal fun calculateAlcoholUnitIndicatorOverflowProgress(ratio: Float): Float 
     return if (currentLapProgress == 0f) 1f else currentLapProgress
 }
 
+internal fun calculateAlcoholUnitIndicatorOverflowGapRadius(
+    strokeWidth: Float,
+    indicatorDiameter: Float,
+    overflowGapPaddingFraction: Float
+): Float {
+    val strokeRadius = (strokeWidth / 2f).coerceAtLeast(0f)
+    val gapPadding = (indicatorDiameter * overflowGapPaddingFraction).coerceAtLeast(0f)
+    return strokeRadius + gapPadding
+}
+
 internal fun alcoholUnitLevelIndicatorColor(alcoholUnitLevel: AlcoholUnitLevel): Color {
     return when (alcoholUnitLevel) {
         is AlcoholUnitLevel.Low -> AlcoholUnitLevelLow
@@ -61,7 +73,7 @@ internal fun AlcoholUnitProgressRing(
     trackColor: Color,
     strokeWidth: Dp,
     modifier: Modifier = Modifier,
-    overflowGapPadding: Dp = 4.dp
+    overflowGapPaddingFraction: Float = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction
 ) {
     val ratio = calculateAlcoholUnitIndicatorRatio(
         unitCount = alcoholUnitLevel.unitCount,
@@ -79,7 +91,7 @@ internal fun AlcoholUnitProgressRing(
             levelColor = levelColor,
             trackColor = trackColor,
             strokeWidth = strokeWidth.toPx(),
-            overflowGapPadding = overflowGapPadding.toPx()
+            overflowGapPaddingFraction = overflowGapPaddingFraction
         )
     }
 }
@@ -89,9 +101,10 @@ private fun DrawScope.drawAlcoholUnitProgressRing(
     levelColor: Color,
     trackColor: Color,
     strokeWidth: Float,
-    overflowGapPadding: Float
+    overflowGapPaddingFraction: Float
 ) {
-    val outerRadius = min(size.width, size.height) / 2f - strokeWidth / 2f
+    val indicatorDiameter = min(size.width, size.height)
+    val outerRadius = indicatorDiameter / 2f - strokeWidth / 2f
     if (outerRadius <= 0f) {
         return
     }
@@ -125,7 +138,11 @@ private fun DrawScope.drawAlcoholUnitProgressRing(
 
             drawCircle(
                 color = Color.Black,
-                radius = (strokeWidth / 2f) + overflowGapPadding,
+                radius = calculateAlcoholUnitIndicatorOverflowGapRadius(
+                    strokeWidth = strokeWidth,
+                    indicatorDiameter = indicatorDiameter,
+                    overflowGapPaddingFraction = overflowGapPaddingFraction
+                ),
                 center = Offset(headX, headY),
                 blendMode = BlendMode.Clear
             )

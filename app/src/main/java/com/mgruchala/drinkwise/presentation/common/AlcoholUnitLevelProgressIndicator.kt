@@ -11,12 +11,14 @@ import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 fun AlcoholUnitLevelProgressIndicator(
     modifier: Modifier,
     strokeWidth: Dp = 5.dp,
-    alcoholUnitLevel: AlcoholUnitLevel
+    alcoholUnitLevel: AlcoholUnitLevel,
+    overflowGapPaddingFraction: Float = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction
 ) {
     AlcoholUnitProgressRing(
         alcoholUnitLevel = alcoholUnitLevel,
         trackColor = MaterialTheme.colorScheme.inverseSurface,
         strokeWidth = strokeWidth,
-        modifier = modifier
+        modifier = modifier,
+        overflowGapPaddingFraction = overflowGapPaddingFraction
     )
 }

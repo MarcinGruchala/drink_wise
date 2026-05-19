@@ -87,4 +87,37 @@ class AlcoholUnitProgressRingTest {
 
         assertEquals(1f, progress, FLOAT_TOLERANCE)
     }
+
+    @Test
+    fun `overflow gap radius preserves the large day detail ring spacing`() {
+        val gapRadius = calculateAlcoholUnitIndicatorOverflowGapRadius(
+            strokeWidth = 12f,
+            indicatorDiameter = 220f,
+            overflowGapPaddingFraction = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction
+        )
+
+        assertEquals(10f, gapRadius, FLOAT_TOLERANCE)
+    }
+
+    @Test
+    fun `overflow gap radius scales down for compact indicators`() {
+        val gapRadius = calculateAlcoholUnitIndicatorOverflowGapRadius(
+            strokeWidth = 3f,
+            indicatorDiameter = 54f,
+            overflowGapPaddingFraction = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction
+        )
+
+        assertEquals(2.4818f, gapRadius, FLOAT_TOLERANCE)
+    }
+
+    @Test
+    fun `overflow gap radius ignores negative extra padding factors`() {
+        val gapRadius = calculateAlcoholUnitIndicatorOverflowGapRadius(
+            strokeWidth = 3f,
+            indicatorDiameter = 54f,
+            overflowGapPaddingFraction = -0.2f
+        )
+
+        assertEquals(1.5f, gapRadius, FLOAT_TOLERANCE)
+    }
 }
