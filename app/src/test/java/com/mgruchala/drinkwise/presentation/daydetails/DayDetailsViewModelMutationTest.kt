@@ -83,9 +83,10 @@ class DayDetailsViewModelMutationTest {
         val stateCollection = backgroundScope.launch { viewModel.state.collect { } }
         testScheduler.advanceUntilIdle()
 
-        viewModel.deleteDrink(drink)
+        val deleted = viewModel.deleteDrink(drink)
         testScheduler.advanceUntilIdle()
 
+        assertEquals(true, deleted)
         assertEquals(drink, repository.deletedDrink)
         assertEquals(emptyList<DrinkEntity>(), viewModel.state.value.drinks)
 
@@ -116,9 +117,10 @@ class DayDetailsViewModelMutationTest {
         val viewModel = createViewModel(repository)
         val drink = DrinkEntity(uid = 3, quantity = 175, alcoholContent = 13.5f, timestamp = 123L)
 
-        viewModel.deleteDrink(drink)
+        val deleted = viewModel.deleteDrink(drink)
         testScheduler.advanceUntilIdle()
 
+        assertEquals(false, deleted)
         assertEquals(drink, repository.deletedDrink)
 
         viewModel.undoLastDeletedDrink()

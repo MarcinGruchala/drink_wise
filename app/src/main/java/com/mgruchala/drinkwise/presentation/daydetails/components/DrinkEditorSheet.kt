@@ -230,7 +230,10 @@ private fun NumberOfDrinksStepper(
             style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = { onDraftChange(draft.decrementCount()) }) {
+        IconButton(
+            onClick = { onDraftChange(draft.decrementCount()) },
+            enabled = (draft.numberOfDrinks ?: 1) > 1
+        ) {
             Icon(
                 imageVector = Icons.Rounded.Remove,
                 contentDescription = stringResource(R.string.day_details_decrease_number_content_description)
@@ -410,25 +413,35 @@ private fun DeleteConfirmation(
 )
 @Composable
 fun DrinkEditorSheetAddPreview() {
-    DrinkWiseTheme {
-        DrinkEditorSheetContent(
-            mode = DrinkEditorSheetMode.Add,
-            selectedDate = LocalDate.of(2026, 5, 17),
-            draft = DrinkEditorDraft(
-                quantityMlText = "500",
-                abvText = "5.2",
-                numberOfDrinksText = "2",
-                time = LocalTime.of(18, 30)
-            ),
-            isDeleteConfirming = false,
-            onDraftChange = {},
-            onSave = {},
-            onDeleteClick = {},
-            onCancelDelete = {},
-            onConfirmDelete = {},
-            modifier = Modifier.padding(24.dp)
+    DrinkEditorSheetContentPreview(
+        mode = DrinkEditorSheetMode.Add,
+        draft = DrinkEditorDraft(
+            quantityMlText = "500",
+            abvText = "5.2",
+            numberOfDrinksText = "2",
+            time = LocalTime.of(18, 30)
         )
-    }
+    )
+}
+
+@Preview(
+    name = "Add - Dark",
+    showBackground = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun DrinkEditorSheetAddPreviewDarkTheme() {
+    DrinkEditorSheetContentPreview(
+        mode = DrinkEditorSheetMode.Add,
+        draft = DrinkEditorDraft(
+            quantityMlText = "500",
+            abvText = "5.2",
+            numberOfDrinksText = "2",
+            time = LocalTime.of(18, 30)
+        ),
+        darkTheme = true
+    )
 }
 
 @Preview(
@@ -439,25 +452,35 @@ fun DrinkEditorSheetAddPreview() {
 )
 @Composable
 fun DrinkEditorSheetEditPreview() {
-    DrinkWiseTheme {
-        DrinkEditorSheetContent(
-            mode = DrinkEditorSheetMode.Edit,
-            selectedDate = LocalDate.of(2026, 5, 17),
-            draft = DrinkEditorDraft(
-                quantityMlText = "175",
-                abvText = "13.5",
-                numberOfDrinksText = "1",
-                time = LocalTime.of(20, 15)
-            ),
-            isDeleteConfirming = false,
-            onDraftChange = {},
-            onSave = {},
-            onDeleteClick = {},
-            onCancelDelete = {},
-            onConfirmDelete = {},
-            modifier = Modifier.padding(24.dp)
+    DrinkEditorSheetContentPreview(
+        mode = DrinkEditorSheetMode.Edit,
+        draft = DrinkEditorDraft(
+            quantityMlText = "175",
+            abvText = "13.5",
+            numberOfDrinksText = "1",
+            time = LocalTime.of(20, 15)
         )
-    }
+    )
+}
+
+@Preview(
+    name = "Edit - Dark",
+    showBackground = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun DrinkEditorSheetEditPreviewDarkTheme() {
+    DrinkEditorSheetContentPreview(
+        mode = DrinkEditorSheetMode.Edit,
+        draft = DrinkEditorDraft(
+            quantityMlText = "175",
+            abvText = "13.5",
+            numberOfDrinksText = "1",
+            time = LocalTime.of(20, 15)
+        ),
+        darkTheme = true
+    )
 }
 
 @Preview(
@@ -468,25 +491,37 @@ fun DrinkEditorSheetEditPreview() {
 )
 @Composable
 fun DrinkEditorSheetEditDeletePreview() {
-    DrinkWiseTheme {
-        DrinkEditorSheetContent(
-            mode = DrinkEditorSheetMode.Edit,
-            selectedDate = LocalDate.of(2026, 5, 17),
-            draft = DrinkEditorDraft(
-                quantityMlText = "175",
-                abvText = "13.5",
-                numberOfDrinksText = "1",
-                time = LocalTime.of(20, 15)
-            ),
-            isDeleteConfirming = true,
-            onDraftChange = {},
-            onSave = {},
-            onDeleteClick = {},
-            onCancelDelete = {},
-            onConfirmDelete = {},
-            modifier = Modifier.padding(24.dp)
-        )
-    }
+    DrinkEditorSheetContentPreview(
+        mode = DrinkEditorSheetMode.Edit,
+        draft = DrinkEditorDraft(
+            quantityMlText = "175",
+            abvText = "13.5",
+            numberOfDrinksText = "1",
+            time = LocalTime.of(20, 15)
+        ),
+        isDeleteConfirming = true
+    )
+}
+
+@Preview(
+    name = "Edit delete confirmation - Dark",
+    showBackground = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun DrinkEditorSheetEditDeletePreviewDarkTheme() {
+    DrinkEditorSheetContentPreview(
+        mode = DrinkEditorSheetMode.Edit,
+        draft = DrinkEditorDraft(
+            quantityMlText = "175",
+            abvText = "13.5",
+            numberOfDrinksText = "1",
+            time = LocalTime.of(20, 15)
+        ),
+        isDeleteConfirming = true,
+        darkTheme = true
+    )
 }
 
 @Preview(
@@ -497,23 +532,61 @@ fun DrinkEditorSheetEditDeletePreview() {
 )
 @Composable
 fun DrinkEditorSheetValidationErrorPreview() {
-    DrinkWiseTheme {
-        DrinkEditorSheetContent(
-            mode = DrinkEditorSheetMode.Add,
-            selectedDate = LocalDate.of(2026, 5, 17),
-            draft = DrinkEditorDraft(
-                quantityMlText = "0",
-                abvText = "101",
-                numberOfDrinksText = "1",
-                time = LocalTime.of(18, 30)
-            ),
-            isDeleteConfirming = false,
-            onDraftChange = {},
-            onSave = {},
-            onDeleteClick = {},
-            onCancelDelete = {},
-            onConfirmDelete = {},
-            modifier = Modifier.padding(24.dp)
+    DrinkEditorSheetContentPreview(
+        mode = DrinkEditorSheetMode.Add,
+        draft = DrinkEditorDraft(
+            quantityMlText = "0",
+            abvText = "101",
+            numberOfDrinksText = "1",
+            time = LocalTime.of(18, 30)
         )
+    )
+}
+
+@Preview(
+    name = "Validation errors - Dark",
+    showBackground = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun DrinkEditorSheetValidationErrorPreviewDarkTheme() {
+    DrinkEditorSheetContentPreview(
+        mode = DrinkEditorSheetMode.Add,
+        draft = DrinkEditorDraft(
+            quantityMlText = "0",
+            abvText = "101",
+            numberOfDrinksText = "1",
+            time = LocalTime.of(18, 30)
+        ),
+        darkTheme = true
+    )
+}
+
+@Composable
+private fun DrinkEditorSheetContentPreview(
+    mode: DrinkEditorSheetMode,
+    draft: DrinkEditorDraft,
+    isDeleteConfirming: Boolean = false,
+    darkTheme: Boolean = false
+) {
+    DrinkWiseTheme(darkTheme = darkTheme) {
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ) {
+            DrinkEditorSheetContent(
+                mode = mode,
+                selectedDate = LocalDate.of(2026, 5, 17),
+                draft = draft,
+                isDeleteConfirming = isDeleteConfirming,
+                onDraftChange = {},
+                onSave = {},
+                onDeleteClick = {},
+                onCancelDelete = {},
+                onConfirmDelete = {},
+                modifier = Modifier.padding(24.dp)
+            )
+        }
     }
 }

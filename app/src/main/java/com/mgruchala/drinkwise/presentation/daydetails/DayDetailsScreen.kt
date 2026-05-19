@@ -100,7 +100,7 @@ private fun DayDetailsContent(
     onNavigateBack: () -> Unit,
     onAddDrinks: (quantityMl: Int, abv: Float, numberOfDrinks: Int, time: LocalTime) -> Unit,
     onUpdateDrink: (original: DrinkEntity, quantityMl: Int, abv: Float, time: LocalTime) -> Unit,
-    onDeleteDrink: (DrinkEntity) -> Unit,
+    onDeleteDrink: suspend (DrinkEntity) -> Boolean,
     onUndoDelete: () -> Unit,
     createAddDraft: () -> DrinkEditorDraft,
     modifier: Modifier = Modifier
@@ -113,8 +113,11 @@ private fun DayDetailsContent(
     val undoDeleteLabel = stringResource(R.string.day_details_undo_delete)
     val deleteWithUndo: (DrinkEntity) -> Unit = { drink ->
         snackbarHostState.currentSnackbarData?.dismiss()
-        onDeleteDrink(drink)
         coroutineScope.launch {
+            val didDelete = onDeleteDrink(drink)
+            if (!didDelete) {
+                return@launch
+            }
             val result = snackbarHostState.showSnackbar(
                 message = drinkDeletedMessage,
                 actionLabel = undoDeleteLabel
@@ -349,7 +352,7 @@ fun DayDetailsContentPreviewLightTheme() {
             onNavigateBack = {},
             onAddDrinks = { _, _, _, _ -> },
             onUpdateDrink = { _, _, _, _ -> },
-            onDeleteDrink = {},
+            onDeleteDrink = { true },
             onUndoDelete = {},
             createAddDraft = ::previewAddDraft
         )
@@ -370,7 +373,7 @@ fun DayDetailsContentPreviewDarkTheme() {
             onNavigateBack = {},
             onAddDrinks = { _, _, _, _ -> },
             onUpdateDrink = { _, _, _, _ -> },
-            onDeleteDrink = {},
+            onDeleteDrink = { true },
             onUndoDelete = {},
             createAddDraft = ::previewAddDraft
         )
@@ -395,7 +398,7 @@ fun DayDetailsContentEmptyPreview() {
             onNavigateBack = {},
             onAddDrinks = { _, _, _, _ -> },
             onUpdateDrink = { _, _, _, _ -> },
-            onDeleteDrink = {},
+            onDeleteDrink = { true },
             onUndoDelete = {},
             createAddDraft = ::previewAddDraft
         )

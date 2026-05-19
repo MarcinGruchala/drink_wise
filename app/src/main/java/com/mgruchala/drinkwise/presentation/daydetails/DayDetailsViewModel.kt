@@ -99,15 +99,15 @@ class DayDetailsViewModel @Inject constructor(
         }
     }
 
-    fun deleteDrink(drink: DrinkEntity) {
-        viewModelScope.launch {
-            val deletedRows = drinksRepository.deleteDrink(drink)
-            lastDeletedDrink = if (deletedRows > 0) {
-                drink
-            } else {
-                null
-            }
+    suspend fun deleteDrink(drink: DrinkEntity): Boolean {
+        val deletedRows = drinksRepository.deleteDrink(drink)
+        val didDelete = deletedRows > 0
+        lastDeletedDrink = if (didDelete) {
+            drink
+        } else {
+            null
         }
+        return didDelete
     }
 
     fun undoLastDeletedDrink() {
