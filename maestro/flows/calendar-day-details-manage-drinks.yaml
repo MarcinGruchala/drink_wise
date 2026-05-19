@@ -1,0 +1,50 @@
+appId: com.mgruchala.drinkwise.dev
+name: Calendar Day Details Manage Drinks
+tags:
+  - navigation
+  - day-details
+  - drink-management
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Today"
+    timeout: 10000
+- tapOn: "Calendar"
+- assertVisible: "Mon"
+- tapOn:
+    text: "Open details for .*"
+- assertVisible: "Drinks"
+- tapOn: "Add drink"
+- assertVisible: "Add drink"
+- tapOn: "Quantity \\(ml\\)"
+- inputText: "250"
+- tapOn: "Alcohol content \\(\\%\\)"
+- inputText: "12"
+- tapOn: "Save"
+- assertVisible: "Drink"
+- assertVisible: "250 ml .* 12.0% .*"
+- tapOn:
+    text: "Edit drink.*250 ml.*"
+- assertVisible: "Edit drink"
+- tapOn: "Quantity \\(ml\\)"
+- eraseText
+- inputText: "330"
+- tapOn: "Save"
+- assertVisible: "330 ml .* 12.0% .*"
+- tapOn:
+    text: "Edit drink.*330 ml.*"
+- tapOn: "Delete"
+- assertVisible: "Delete this drink?"
+- tapOn: "Delete"
+- assertVisible: "Drink deleted"
+- tapOn: "Undo"
+- assertVisible: "330 ml .* 12.0% .*"
+- swipe:
+    from:
+      text: "Edit drink.*330 ml.*"
+    direction: LEFT
+- assertVisible: "Drink deleted"
+- tapOn: "Undo"
+- assertVisible: "330 ml .* 12.0% .*"
+- takeScreenshot: calendar-day-details-manage-drinks

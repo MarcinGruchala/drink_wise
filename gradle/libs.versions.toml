@@ -11,6 +11,7 @@ androidJunit = "1.14.0.0"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinxSerializationJson = "1.8.0"
+kotlinxCoroutines = "1.9.0"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.0"
 composeBom = "2025.02.00"
@@ -41,6 +42,7 @@ junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engi
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
@@ -51,6 +53,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtendedVersion" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
