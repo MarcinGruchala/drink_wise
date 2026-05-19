@@ -26,7 +26,7 @@ private const val StartAngleDegrees = -90f
 private const val MinimumAlcoholUnitIndicatorLimit = 0.1f
 
 // Extra clear radius as a fraction of indicator diameter; 4dp on the 220dp details ring.
-const val AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction = 0.018181818f
+const val AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction = 0.025f
 
 internal fun calculateAlcoholUnitIndicatorSafeLimit(limit: Float): Float {
     return limit.coerceAtLeast(MinimumAlcoholUnitIndicatorLimit)
