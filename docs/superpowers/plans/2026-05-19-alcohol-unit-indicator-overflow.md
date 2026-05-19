@@ -134,7 +134,7 @@ class AlcoholUnitProgressRingTest {
 Run:
 
 ```bash
-./gradlew test --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
+./gradlew :app:testDebugUnitTest --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
 ```
 
 Expected: FAIL with unresolved references for `calculateAlcoholUnitIndicatorSafeLimit`, `calculateAlcoholUnitIndicatorRatio`, `calculateAlcoholUnitIndicatorBaseProgress`, and `calculateAlcoholUnitIndicatorOverflowProgress`.
@@ -177,7 +177,7 @@ internal fun calculateAlcoholUnitIndicatorOverflowProgress(ratio: Float): Float 
 Run:
 
 ```bash
-./gradlew test --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
+./gradlew :app:testDebugUnitTest --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
 ```
 
 Expected: PASS for all tests in `AlcoholUnitProgressRingTest`.
@@ -376,7 +376,7 @@ private fun DrawScope.drawAlcoholUnitProgress(
 Run:
 
 ```bash
-./gradlew test --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
+./gradlew :app:testDebugUnitTest --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
 ```
 
 Expected: PASS. This also checks that the shared renderer file compiles.
@@ -431,7 +431,7 @@ fun AlcoholUnitLevelProgressIndicator(
 Run:
 
 ```bash
-./gradlew test --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
+./gradlew :app:testDebugUnitTest --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
 ```
 
 Expected: PASS.
@@ -625,7 +625,7 @@ app/src/test/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitProgres
 Run:
 
 ```bash
-./gradlew test --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
+./gradlew :app:testDebugUnitTest --tests "com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRingTest"
 ```
 
 Expected: PASS.
