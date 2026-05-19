@@ -1,6 +1,7 @@
 package com.mgruchala.drinkwise.presentation.daydetails
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,31 +12,53 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.R
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.daydetails.components.DayConsumptionIndicator
+import com.mgruchala.drinkwise.presentation.daydetails.components.DrinkEditorSheet
+import com.mgruchala.drinkwise.presentation.daydetails.components.DrinkEditorSheetMode
 import com.mgruchala.drinkwise.presentation.daydetails.components.DrinkListItem
+import com.mgruchala.drinkwise.presentation.daydetails.editor.DrinkEditorDraft
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -46,13 +69,27 @@ fun DayDetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: DayDetailsViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     DayDetailsContent(
         state = state,
         onNavigateBack = onNavigateBack,
+        onAddDrinks = viewModel::addDrinks,
+        onUpdateDrink = viewModel::updateDrink,
+        onDeleteDrink = viewModel::deleteDrink,
+        onUndoDelete = viewModel::undoLastDeletedDrink,
         modifier = modifier
     )
+}
+
+private sealed interface DrinkEditorUiState {
+    data class Add(val draft: DrinkEditorDraft) : DrinkEditorUiState
+
+    data class Edit(
+        val drink: DrinkEntity,
+        val draft: DrinkEditorDraft,
+        val isDeleteConfirming: Boolean = false
+    ) : DrinkEditorUiState
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,12 +97,49 @@ fun DayDetailsScreen(
 private fun DayDetailsContent(
     state: DayDetailsState,
     onNavigateBack: () -> Unit,
+    onAddDrinks: (quantityMl: Int, abv: Float, numberOfDrinks: Int, time: LocalTime) -> Unit,
+    onUpdateDrink: (original: DrinkEntity, quantityMl: Int, abv: Float, time: LocalTime) -> Unit,
+    onDeleteDrink: (DrinkEntity) -> Unit,
+    onUndoDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.getDefault())
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var editorState by remember { mutableStateOf<DrinkEditorUiState?>(null) }
+    val drinkDeletedMessage = stringResource(R.string.day_details_drink_deleted)
+    val undoDeleteLabel = stringResource(R.string.day_details_undo_delete)
+    val deleteWithUndo: (DrinkEntity) -> Unit = { drink ->
+        snackbarHostState.currentSnackbarData?.dismiss()
+        onDeleteDrink(drink)
+        coroutineScope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = drinkDeletedMessage,
+                actionLabel = undoDeleteLabel
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                onUndoDelete()
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    editorState = DrinkEditorUiState.Add(
+                        draft = DrinkEditorDraft.forAdd(System.currentTimeMillis())
+                    )
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.day_details_add_drink)
+                )
+            }
+        },
         topBar = {
             TopAppBar(
                 title = {
@@ -86,7 +160,7 @@ private fun DayDetailsContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+            contentPadding = PaddingValues(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
@@ -112,10 +186,148 @@ private fun DayDetailsContent(
                 }
             } else {
                 items(state.drinks, key = { it.uid }) { drink ->
-                    DrinkListItem(drink = drink)
+                    SwipeToDeleteDrinkItem(
+                        drink = drink,
+                        onClick = {
+                            editorState = DrinkEditorUiState.Edit(
+                                drink = drink,
+                                draft = DrinkEditorDraft.forEdit(drink)
+                            )
+                        },
+                        onDelete = { deleteWithUndo(drink) }
+                    )
                 }
             }
         }
+    }
+
+    when (val currentEditorState = editorState) {
+        is DrinkEditorUiState.Add -> {
+            DrinkEditorSheet(
+                mode = DrinkEditorSheetMode.Add,
+                selectedDate = state.selectedDate,
+                draft = currentEditorState.draft,
+                isDeleteConfirming = false,
+                onDraftChange = { draft -> editorState = currentEditorState.copy(draft = draft) },
+                onSave = {
+                    val draft = currentEditorState.draft
+                    if (draft.isValidForAdd) {
+                        onAddDrinks(
+                            requireNotNull(draft.quantityMl),
+                            requireNotNull(draft.abv),
+                            requireNotNull(draft.numberOfDrinks),
+                            draft.time
+                        )
+                        editorState = null
+                    }
+                },
+                onDeleteClick = {},
+                onCancelDelete = {},
+                onConfirmDelete = {},
+                onDismiss = { editorState = null }
+            )
+        }
+
+        is DrinkEditorUiState.Edit -> {
+            DrinkEditorSheet(
+                mode = DrinkEditorSheetMode.Edit,
+                selectedDate = state.selectedDate,
+                draft = currentEditorState.draft,
+                isDeleteConfirming = currentEditorState.isDeleteConfirming,
+                onDraftChange = { draft ->
+                    editorState = currentEditorState.copy(
+                        draft = draft,
+                        isDeleteConfirming = false
+                    )
+                },
+                onSave = {
+                    val draft = currentEditorState.draft
+                    if (draft.isValidForEdit) {
+                        onUpdateDrink(
+                            currentEditorState.drink,
+                            requireNotNull(draft.quantityMl),
+                            requireNotNull(draft.abv),
+                            draft.time
+                        )
+                        editorState = null
+                    }
+                },
+                onDeleteClick = {
+                    editorState = currentEditorState.copy(isDeleteConfirming = true)
+                },
+                onCancelDelete = {
+                    editorState = currentEditorState.copy(isDeleteConfirming = false)
+                },
+                onConfirmDelete = {
+                    editorState = null
+                    deleteWithUndo(currentEditorState.drink)
+                },
+                onDismiss = { editorState = null }
+            )
+        }
+
+        null -> Unit
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeToDeleteDrinkItem(
+    drink: DrinkEntity,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val deleteBackgroundDescription = stringResource(R.string.day_details_swipe_delete_background)
+    val deleteAction = CustomAccessibilityAction(
+        label = deleteBackgroundDescription,
+        action = {
+            onDelete()
+            true
+        }
+    )
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDelete()
+                true
+            } else {
+                false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(horizontal = 20.dp)
+                    .semantics {
+                        contentDescription = deleteBackgroundDescription
+                    },
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+        },
+        modifier = modifier,
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true
+    ) {
+        DrinkListItem(
+            drink = drink,
+            onClick = onClick,
+            modifier = Modifier.semantics {
+                customActions = listOf(deleteAction)
+            }
+        )
     }
 }
 
@@ -130,7 +342,11 @@ fun DayDetailsContentPreviewLightTheme() {
     DrinkWiseTheme {
         DayDetailsContent(
             state = dayDetailsPreviewState,
-            onNavigateBack = {}
+            onNavigateBack = {},
+            onAddDrinks = { _, _, _, _ -> },
+            onUpdateDrink = { _, _, _, _ -> },
+            onDeleteDrink = {},
+            onUndoDelete = {}
         )
     }
 }
@@ -146,7 +362,11 @@ fun DayDetailsContentPreviewDarkTheme() {
     DrinkWiseTheme(darkTheme = true) {
         DayDetailsContent(
             state = dayDetailsPreviewState,
-            onNavigateBack = {}
+            onNavigateBack = {},
+            onAddDrinks = { _, _, _, _ -> },
+            onUpdateDrink = { _, _, _, _ -> },
+            onDeleteDrink = {},
+            onUndoDelete = {}
         )
     }
 }
@@ -166,7 +386,11 @@ fun DayDetailsContentEmptyPreview() {
                 totalUnits = 0f,
                 alcoholUnitLevel = AlcoholUnitLevel.Low(0f, 4f)
             ),
-            onNavigateBack = {}
+            onNavigateBack = {},
+            onAddDrinks = { _, _, _, _ -> },
+            onUpdateDrink = { _, _, _, _ -> },
+            onDeleteDrink = {},
+            onUndoDelete = {}
         )
     }
 }
