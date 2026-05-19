@@ -2,10 +2,12 @@ package com.mgruchala.drinkwise.presentation.daydetails.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -158,33 +162,15 @@ fun DrinkEditorSheetContent(
             )
         }
 
-        if (mode == DrinkEditorSheetMode.Edit && isDeleteConfirming) {
-            DeleteConfirmation(
-                onCancelDelete = onCancelDelete,
-                onConfirmDelete = onConfirmDelete
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (mode == DrinkEditorSheetMode.Edit && !isDeleteConfirming) {
-                TextButton(onClick = onDeleteClick) {
-                    Text(stringResource(R.string.day_details_delete_drink))
-                }
-            } else {
-                Spacer(modifier = Modifier)
-            }
-
-            Button(
-                onClick = onSave,
-                enabled = canSave
-            ) {
-                Text(stringResource(R.string.day_details_save_drink))
-            }
-        }
+        DrinkEditorActions(
+            mode = mode,
+            isDeleteConfirming = isDeleteConfirming,
+            canSave = canSave,
+            onSave = onSave,
+            onDeleteClick = onDeleteClick,
+            onCancelDelete = onCancelDelete,
+            onConfirmDelete = onConfirmDelete
+        )
     }
 }
 
@@ -319,6 +305,52 @@ private fun TimePickerField(
 }
 
 @Composable
+private fun DrinkEditorActions(
+    mode: DrinkEditorSheetMode,
+    isDeleteConfirming: Boolean,
+    canSave: Boolean,
+    onSave: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onCancelDelete: () -> Unit,
+    onConfirmDelete: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 80.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        if (mode == DrinkEditorSheetMode.Edit && isDeleteConfirming) {
+            DeleteConfirmation(
+                onCancelDelete = onCancelDelete,
+                onConfirmDelete = onConfirmDelete
+            )
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (mode == DrinkEditorSheetMode.Edit) {
+                    TextButton(onClick = onDeleteClick) {
+                        Text(stringResource(R.string.day_details_delete_drink))
+                    }
+                } else {
+                    Spacer(modifier = Modifier)
+                }
+
+                Button(
+                    onClick = onSave,
+                    enabled = canSave
+                ) {
+                    Text(stringResource(R.string.day_details_save_drink))
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun DeleteConfirmation(
     onCancelDelete: () -> Unit,
     onConfirmDelete: () -> Unit
@@ -329,28 +361,42 @@ private fun DeleteConfirmation(
         color = MaterialTheme.colorScheme.errorContainer,
         contentColor = MaterialTheme.colorScheme.onErrorContainer
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 80.dp)
+                .padding(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = stringResource(R.string.day_details_delete_confirmation_title),
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text = stringResource(R.string.day_details_delete_confirmation_message),
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                TextButton(onClick = onCancelDelete) {
-                    Text(stringResource(R.string.day_details_cancel_delete))
-                }
-                TextButton(onClick = onConfirmDelete) {
-                    Text(stringResource(R.string.day_details_confirm_delete))
-                }
+                Text(
+                    text = stringResource(R.string.day_details_delete_confirmation_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = stringResource(R.string.day_details_delete_confirmation_message),
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            TextButton(onClick = onCancelDelete) {
+                Text(stringResource(R.string.day_details_cancel_delete))
+            }
+            TextButton(
+                onClick = onConfirmDelete,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text(stringResource(R.string.day_details_confirm_delete))
             }
         }
     }
