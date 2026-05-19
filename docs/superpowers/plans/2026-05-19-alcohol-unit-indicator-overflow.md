@@ -4,7 +4,7 @@
 
 **Goal:** Reuse the Day Details overflow ring behavior across Home, Calendar, and Day Details while preserving the compact Home and Calendar layouts.
 
-**Architecture:** Extract progress math, color selection, and Canvas ring drawing into `presentation/common`. Keep `AlcoholUnitLevelProgressIndicator` as the compact public wrapper used by Home and Calendar, and update `DayConsumptionIndicator` to delegate only the ring rendering to the shared implementation while keeping its rich text and over-limit label.
+**Architecture:** Extract progress math, color selection, compact defaults, and Canvas ring drawing into `presentation/common`. Home, Calendar, and Day Details call `AlcoholUnitProgressRing` directly, while `DayConsumptionIndicator` keeps its rich text and over-limit label.
 
 **Tech Stack:** Kotlin, Jetpack Compose Canvas, Material 3 color scheme, JUnit 5, Gradle, Maestro for Android UI verification.
 
@@ -14,15 +14,17 @@
 
 - Create `app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitProgressRing.kt`
   - Owns safe limit calculation, ratio calculation, base progress calculation, overflow progress calculation, level color selection, and shared Canvas drawing.
-- Modify `app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitLevelProgressIndicator.kt`
-  - Keeps the current compact API and delegates to `AlcoholUnitProgressRing`.
+- Delete `app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitLevelProgressIndicator.kt`
+  - Replaced by direct `AlcoholUnitProgressRing` calls.
+- Modify Home and Calendar indicator call sites
+  - Import and call `AlcoholUnitProgressRing` directly while preserving sizes and stroke widths.
 - Modify `app/src/main/java/com/mgruchala/drinkwise/presentation/daydetails/components/DayConsumptionIndicator.kt`
   - Removes duplicated Canvas/progress helpers and delegates ring drawing to `AlcoholUnitProgressRing`.
 - Create `app/src/test/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitProgressRingTest.kt`
   - Covers the shared progress math and defensive limit handling.
 - Delete `app/src/test/java/com/mgruchala/drinkwise/presentation/daydetails/components/DayConsumptionIndicatorOverflowTest.kt`
   - Replaced by common helper tests.
-- No Home or Calendar layout files need behavior changes because they already call `AlcoholUnitLevelProgressIndicator`.
+- Home and Calendar layout files keep the same visible sizing while calling `AlcoholUnitProgressRing` directly.
 
 ---
 
@@ -392,37 +394,28 @@ git commit -m "feat: add shared alcohol indicator ring"
 
 ---
 
-### Task 3: Migrate The Compact Indicator To The Shared Renderer
+### Task 3: Simplify Compact Indicators To The Shared Renderer
 
 **Files:**
-- Modify: `app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitLevelProgressIndicator.kt`
+- Modify: `app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitProgressRing.kt`
+- Modify: `app/src/main/java/com/mgruchala/drinkwise/presentation/home/DrinksSummaryCard.kt`
+- Modify: `app/src/main/java/com/mgruchala/drinkwise/presentation/calendar/CalendarScreen.kt`
+- Delete: `app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitLevelProgressIndicator.kt`
 
-- [ ] **Step 1: Replace Material `CircularProgressIndicator` usage**
+- [ ] **Step 1: Add compact defaults to the shared ring**
 
-Update `app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitLevelProgressIndicator.kt` to this complete content:
+Update `AlcoholUnitProgressRing` so compact callers can rely on the existing compact defaults:
 
 ```kotlin
-package com.mgruchala.drinkwise.presentation.common
-
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
-
 @Composable
-fun AlcoholUnitLevelProgressIndicator(
-    modifier: Modifier,
+internal fun AlcoholUnitProgressRing(
+    alcoholUnitLevel: AlcoholUnitLevel,
+    modifier: Modifier = Modifier,
+    trackColor: Color = MaterialTheme.colorScheme.inverseSurface,
     strokeWidth: Dp = 5.dp,
-    alcoholUnitLevel: AlcoholUnitLevel
+    overflowGapPaddingFraction: Float = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction
 ) {
-    AlcoholUnitProgressRing(
-        alcoholUnitLevel = alcoholUnitLevel,
-        trackColor = MaterialTheme.colorScheme.inverseSurface,
-        strokeWidth = strokeWidth,
-        modifier = modifier
-    )
+    // existing renderer body
 }
 ```
 
@@ -436,12 +429,12 @@ Run:
 
 Expected: PASS.
 
-- [ ] **Step 3: Confirm Home and Calendar still call the compact API unchanged**
+- [ ] **Step 3: Confirm Home and Calendar call the shared ring directly**
 
 Run:
 
 ```bash
-rg -n "AlcoholUnitLevelProgressIndicator" app/src/main/java/com/mgruchala/drinkwise/presentation
+rg -n "AlcoholUnitProgressRing" app/src/main/java/com/mgruchala/drinkwise/presentation
 ```
 
 Expected output includes these call sites:
@@ -451,14 +444,14 @@ app/src/main/java/com/mgruchala/drinkwise/presentation/calendar/CalendarScreen.k
 app/src/main/java/com/mgruchala/drinkwise/presentation/home/DrinksSummaryCard.kt:...
 ```
 
-No Home or Calendar layout edits are needed in this task.
+No Home or Calendar layout sizing changes are needed in this task.
 
 - [ ] **Step 4: Commit the compact indicator migration**
 
 Run:
 
 ```bash
-git add app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitLevelProgressIndicator.kt
+git add app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitProgressRing.kt app/src/main/java/com/mgruchala/drinkwise/presentation/home/DrinksSummaryCard.kt app/src/main/java/com/mgruchala/drinkwise/presentation/calendar/CalendarScreen.kt app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitLevelProgressIndicator.kt
 git commit -m "feat: use overflow ring for compact alcohol indicators"
 ```
 
@@ -676,18 +669,17 @@ Run:
 
 Expected: PASS. This avoids the release variant and local signing requirements.
 
-- [ ] **Step 3: Verify existing call sites still use the compact indicator**
+- [ ] **Step 3: Verify existing call sites use the shared ring**
 
 Run:
 
 ```bash
-rg -n "AlcoholUnitLevelProgressIndicator|AlcoholUnitProgressRing|calculateAlcoholUnitIndicator" app/src/main/java app/src/test/java
+rg -n "AlcoholUnitProgressRing|calculateAlcoholUnitIndicator" app/src/main/java app/src/test/java
 ```
 
 Expected:
 
 ```text
-app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitLevelProgressIndicator.kt
 app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitProgressRing.kt
 app/src/main/java/com/mgruchala/drinkwise/presentation/daydetails/components/DayConsumptionIndicator.kt
 app/src/main/java/com/mgruchala/drinkwise/presentation/calendar/CalendarScreen.kt

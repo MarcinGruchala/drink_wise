@@ -14,7 +14,7 @@ Relevant current pieces:
 
 - `AppNavigation` owns the root `NavHost` and bottom navigation.
 - `CalendarScreen` already renders a month pager and day cells with `CalendarDayData`.
-- `AlcoholUnitLevelProgressIndicator` is the existing compact circular progress indicator used by calendar/home UI.
+- `AlcoholUnitProgressRing` is the shared circular progress indicator used by calendar/home UI.
 - `DrinkEntity` stores `quantity`, `alcoholContent`, and `timestamp`.
 - `DrinkDao.getPaginatedDrinksByDateRange(startDate, endDate)` already supports date-range reads.
 - Daily limits come from `AlcoholLimitPreferencesDataSource`.

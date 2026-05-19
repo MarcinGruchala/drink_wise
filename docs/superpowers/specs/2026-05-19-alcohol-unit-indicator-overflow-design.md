@@ -13,7 +13,7 @@ Drink Wise is an Android/Kotlin Jetpack Compose app using Material 3, Hilt, Room
 Relevant existing pieces:
 
 - `DayConsumptionIndicator` in `app/src/main/java/com/mgruchala/drinkwise/presentation/daydetails/components/DayConsumptionIndicator.kt` renders a custom 220dp Canvas ring with overflow lap behavior, centered percentage/unit text, and a Day Details-only `+x` over-limit label.
-- `AlcoholUnitLevelProgressIndicator` in `app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitLevelProgressIndicator.kt` renders a compact Material `CircularProgressIndicator`.
+- `AlcoholUnitProgressRing` in `app/src/main/java/com/mgruchala/drinkwise/presentation/common/AlcoholUnitProgressRing.kt` renders the shared Canvas progress ring used by compact and Day Details indicators.
 - `DrinksSummaryCard` uses the compact indicator at 54dp on Home.
 - `CalendarScreen.DayCell` uses the compact indicator at day-cell size with a 3dp stroke.
 - `DayConsumptionIndicatorOverflowTest` already covers the day-details overflow progress helpers.
@@ -24,7 +24,7 @@ Relevant existing pieces:
 In scope:
 
 - Extract the Day Details overflow ring drawing and progress math into reusable common UI code.
-- Keep `AlcoholUnitLevelProgressIndicator` as the compact public API used by Home and Calendar.
+- Use `AlcoholUnitProgressRing` directly for the compact Home and Calendar indicators.
 - Update `DayConsumptionIndicator` to delegate ring drawing/math to the shared implementation.
 - Preserve Home and Calendar layout sizes, positions, and visible text.
 - Preserve the Day Details centered text, accessibility description, and `+x` over-limit label.
@@ -53,7 +53,7 @@ The shared code should own:
 
 `DayConsumptionIndicator` remains a rich Day Details component. It keeps its layout and text content, but uses the shared ring renderer instead of owning the Canvas drawing details.
 
-`AlcoholUnitLevelProgressIndicator` remains the compact component for Home and Calendar. It keeps the same function name and size/stroke call sites, but renders the shared overflow ring instead of delegating to Material's `CircularProgressIndicator`.
+Home and Calendar call `AlcoholUnitProgressRing` directly. The ring keeps compact defaults for the existing Home track color and stroke width, while Calendar overrides only the 3dp stroke.
 
 ## Visual Behavior
 
@@ -77,10 +77,9 @@ For consumption above the limit:
 
 The implementation should keep responsibilities narrow:
 
-- Shared common renderer: visual ring drawing and progress math only.
-- `AlcoholUnitLevelProgressIndicator`: compact wrapper that maps an `AlcoholUnitLevel` into the shared renderer.
+- Shared common renderer: visual ring drawing, compact defaults, and progress math only.
 - `DayConsumptionIndicator`: Day Details composition, strings, semantics, center content, and over-limit label.
-- Home and Calendar callers: no layout changes beyond continuing to call the compact indicator.
+- Home and Calendar callers: compact ring sizing and stroke choices only.
 
 This avoids a broad UI rewrite and prevents the Day Details and compact indicators from drifting apart again.
 

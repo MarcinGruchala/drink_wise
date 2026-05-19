@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mgruchala.drinkwise.R
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
-import com.mgruchala.drinkwise.presentation.common.AlcoholUnitLevelProgressIndicator
+import com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRing
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -321,7 +321,7 @@ fun DayCell(
             )
 
             dayData.alcoholUnitLevel?.let {
-                AlcoholUnitLevelProgressIndicator(
+                AlcoholUnitProgressRing(
                     modifier = Modifier.matchParentSize(),
                     alcoholUnitLevel = it,
                     strokeWidth = 3.dp,
