@@ -1,6 +1,7 @@
 package com.mgruchala.drinkwise.presentation.daydetails.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,8 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,6 +37,7 @@ import java.time.ZoneId
 @Composable
 fun DrinkListItem(
     drink: DrinkEntity,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val volume = formatDayDetailsVolume(drink.quantity)
@@ -41,7 +45,7 @@ fun DrinkListItem(
     val units = formatDayDetailsUnits(calculateAlcoholUnits(drink.quantity, drink.alcoholContent).toFloat())
     val time = formatDayDetailsTime(drink.timestamp)
     val description = stringResource(
-        id = R.string.day_details_drink_item_description,
+        id = R.string.day_details_edit_drink_item_description,
         volume,
         abv,
         units,
@@ -58,7 +62,14 @@ fun DrinkListItem(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clearAndSetSemantics { contentDescription = description }
+            .clickable(
+                role = Role.Button,
+                onClick = onClick
+            )
+            .semantics {
+                contentDescription = description
+                role = Role.Button
+            }
     ) {
         Row(
             modifier = Modifier
@@ -120,6 +131,7 @@ private fun DrinkListItemPreview(darkTheme: Boolean) {
         ) {
             DrinkListItem(
                 drink = previewDrink,
+                onClick = {},
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
