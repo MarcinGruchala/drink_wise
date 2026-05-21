@@ -6,6 +6,7 @@ import com.mgruchala.alcohol_database.DrinkEntity
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.domain.DrinksRepository
 import com.mgruchala.drinkwise.utils.calculateAlcoholUnits
+import com.mgruchala.drinkwise.utils.time.Clock
 import com.mgruchala.user_preferences.alcohol_limit.AlcoholLimitPreferencesDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 data class CalendarScreenState(
     val calendarData: Map<YearMonth, List<CalendarDayData>> = emptyMap(),
+    val monthlyAlcoholUnitLevels: Map<YearMonth, AlcoholUnitLevel> = emptyMap(),
     val isLoading: Boolean = true
 )
 
@@ -31,7 +33,8 @@ data class CalendarDayData(
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
     drinksRepository: DrinksRepository,
-    alcoholLimitPreferencesRepository: AlcoholLimitPreferencesDataSource
+    alcoholLimitPreferencesRepository: AlcoholLimitPreferencesDataSource,
+    private val clock: Clock
 ) : ViewModel() {
 
     private val drinksFlow = drinksRepository.getAllDrinks()
@@ -39,12 +42,14 @@ class CalendarViewModel @Inject constructor(
 
     val state: StateFlow<CalendarScreenState> =
         combine(drinksFlow, userPreferencesFlow) { drinks, userPreferences ->
-            val calendarData = processCalendarData(
+            val processedData = processCalendarData(
                 drinks = drinks,
-                dailyAlcoholLimit = userPreferences.dailyAlcoholUnitLimit
+                dailyAlcoholLimit = userPreferences.dailyAlcoholUnitLimit.coerceAtLeast(0.1f),
+                monthlyAlcoholLimit = userPreferences.monthlyAlcoholUnitLimit.coerceAtLeast(0.1f)
             )
             CalendarScreenState(
-                calendarData = calendarData,
+                calendarData = processedData.calendarData,
+                monthlyAlcoholUnitLevels = processedData.monthlyAlcoholUnitLevels,
                 isLoading = false
             )
         }.stateIn(
@@ -53,12 +58,16 @@ class CalendarViewModel @Inject constructor(
             initialValue = CalendarScreenState()
         )
 
-    private fun processCalendarData(drinks: List<DrinkEntity>, dailyAlcoholLimit: Float): Map<YearMonth, List<CalendarDayData>> {
+    private fun processCalendarData(
+        drinks: List<DrinkEntity>,
+        dailyAlcoholLimit: Float,
+        monthlyAlcoholLimit: Float
+    ): CalendarProcessedData {
         val drinksByDate = drinks.groupBy {
             timestampToLocalDate(it.timestamp)
         }
 
-        val today = LocalDate.now()
+        val today = currentLocalDate()
         val startDate = if (drinks.isEmpty()) {
             today.minusMonths(1).withDayOfMonth(1)
         } else {
@@ -88,8 +97,19 @@ class CalendarViewModel @Inject constructor(
             currentDate = currentDate.plusDays(1)
         }
 
-        return calendarDays.groupBy { YearMonth.from(it.date) }
+        val calendarData = calendarDays.groupBy { YearMonth.from(it.date) }
             .toSortedMap(compareByDescending { it })
+        val monthlyAlcoholUnitLevels = calendarData.mapValues { (_, days) ->
+            val monthlyUnitCount = days.sumOf { day ->
+                day.alcoholUnitLevel?.unitCount?.toDouble() ?: 0.0
+            }.toFloat()
+            AlcoholUnitLevel.fromUnitCount(monthlyUnitCount, monthlyAlcoholLimit)
+        }.toSortedMap(compareByDescending { it })
+
+        return CalendarProcessedData(
+            calendarData = calendarData,
+            monthlyAlcoholUnitLevels = monthlyAlcoholUnitLevels
+        )
     }
 
     private fun timestampToLocalDate(timestamp: Long): LocalDate {
@@ -97,4 +117,13 @@ class CalendarViewModel @Inject constructor(
             .atZone(ZoneId.systemDefault())
             .toLocalDate()
     }
+
+    private fun currentLocalDate(): LocalDate {
+        return timestampToLocalDate(clock.nowMillis())
+    }
 } 
+
+private data class CalendarProcessedData(
+    val calendarData: Map<YearMonth, List<CalendarDayData>>,
+    val monthlyAlcoholUnitLevels: Map<YearMonth, AlcoholUnitLevel>
+)

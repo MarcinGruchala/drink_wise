@@ -11,6 +11,8 @@ tags:
     timeout: 10000
 - tapOn: "Calendar"
 - assertVisible: "Mon"
+- assertVisible: ".*of 30 units, .* percent of monthly limit.*"
+- takeScreenshot: calendar-month-summary
 - tapOn:
     text: "Open details for .*"
 - assertVisible: "Drinks"

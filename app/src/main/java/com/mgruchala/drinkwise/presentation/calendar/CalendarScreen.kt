@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -28,13 +29,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -44,9 +45,13 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mgruchala.drinkwise.R
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRing
+import com.mgruchala.drinkwise.presentation.common.calculateAlcoholUnitIndicatorRatio
+import com.mgruchala.drinkwise.presentation.common.calculateAlcoholUnitIndicatorSafeLimit
+import com.mgruchala.drinkwise.presentation.common.formatAlcoholUnitsCompact
 import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -55,12 +60,16 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 
+private val MonthConsumptionIndicatorSize = 184.dp
+private val MonthConsumptionIndicatorTopGap = 48.dp
+private val MonthConsumptionIndicatorStrokeWidth = 10.dp
+
 @Composable
 fun CalendarScreen(
     onDayClick: (LocalDate) -> Unit = {},
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     if (state.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -69,6 +78,7 @@ fun CalendarScreen(
     } else {
         CalendarScreenContent(
             calendarData = state.calendarData,
+            monthlyAlcoholUnitLevels = state.monthlyAlcoholUnitLevels,
             onDayClick = onDayClick
         )
     }
@@ -77,6 +87,7 @@ fun CalendarScreen(
 @Composable
 fun CalendarScreenContent(
     calendarData: Map<YearMonth, List<CalendarDayData>>,
+    monthlyAlcoholUnitLevels: Map<YearMonth, AlcoholUnitLevel> = emptyMap(),
     onDayClick: (LocalDate) -> Unit = {}
 ) {
     val sortedMonths = calendarData.keys.sortedDescending()
@@ -123,11 +134,23 @@ fun CalendarScreenContent(
             ) { page ->
                 val month = sortedMonths[page]
                 val days = calendarData[month] ?: emptyList()
-                MonthCalendar(
-                    month = month,
-                    originalDays = days,
-                    onDayClick = onDayClick
-                )
+                Column(modifier = Modifier.fillMaxSize()) {
+                    MonthCalendar(
+                        month = month,
+                        originalDays = days,
+                        onDayClick = onDayClick
+                    )
+
+                    monthlyAlcoholUnitLevels[month]?.let { monthAlcoholUnitLevel ->
+                        Spacer(modifier = Modifier.height(MonthConsumptionIndicatorTopGap))
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            MonthConsumptionIndicator(alcoholUnitLevel = monthAlcoholUnitLevel)
+                        }
+                    }
+                }
             }
         }
     }
@@ -201,7 +224,7 @@ fun MonthCalendar(
     allCells.addAll(allDaysOfMonth)
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         allCells.chunked(7).forEach { weekCells ->
@@ -262,6 +285,92 @@ fun WeekRow(
                     EmptyDayPlaceholder()
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun MonthConsumptionIndicator(
+    alcoholUnitLevel: AlcoholUnitLevel,
+    modifier: Modifier = Modifier
+) {
+    val consumed = alcoholUnitLevel.unitCount
+    val limit = calculateAlcoholUnitIndicatorSafeLimit(alcoholUnitLevel.limit)
+    val ratio = calculateAlcoholUnitIndicatorRatio(
+        unitCount = consumed,
+        limit = alcoholUnitLevel.limit
+    )
+    val percent = (ratio * 100f).toInt()
+    val consumedText = formatAlcoholUnitsCompact(consumed)
+    val limitText = formatAlcoholUnitsCompact(limit)
+    val overLimitAmount = (consumed - limit).coerceAtLeast(0f)
+    val overLimitText = formatAlcoholUnitsCompact(overLimitAmount)
+    val isOverLimit = ratio > 1f
+    val contentDescription = if (isOverLimit) {
+        stringResource(
+            id = R.string.calendar_month_consumption_indicator_over_limit_description,
+            consumedText,
+            limitText,
+            percent.toString(),
+            overLimitText
+        )
+    } else {
+        stringResource(
+            id = R.string.calendar_month_consumption_indicator_description,
+            consumedText,
+            limitText,
+            percent.toString()
+        )
+    }
+
+    Box(
+        modifier = modifier
+            .size(MonthConsumptionIndicatorSize)
+            .clearAndSetSemantics { this.contentDescription = contentDescription },
+        contentAlignment = Alignment.Center
+    ) {
+        AlcoholUnitProgressRing(
+            alcoholUnitLevel = alcoholUnitLevel,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            strokeWidth = MonthConsumptionIndicatorStrokeWidth,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "$percent%",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = stringResource(
+                    id = R.string.calendar_month_consumed_of_limit,
+                    consumedText,
+                    limitText
+                ),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = stringResource(R.string.day_details_units_label),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        if (isOverLimit) {
+            Text(
+                text = stringResource(R.string.day_details_over_limit_amount, overLimitText),
+                modifier = Modifier.align(Alignment.TopEnd),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
@@ -342,7 +451,10 @@ fun DayCell(
 fun CalendarScreenPreviewLightTheme() {
     DrinkWiseTheme {
         val previewData = createPreviewCalendarData()
-        CalendarScreenContent(previewData)
+        CalendarScreenContent(
+            calendarData = previewData,
+            monthlyAlcoholUnitLevels = createPreviewMonthlyAlcoholUnitLevels(previewData)
+        )
     }
 }
 
@@ -357,7 +469,30 @@ fun CalendarScreenPreviewLightTheme() {
 fun CalendarScreenPreviewDarkTheme() {
     DrinkWiseTheme(darkTheme = true) {
         val previewData = createPreviewCalendarData()
-        CalendarScreenContent(previewData)
+        CalendarScreenContent(
+            calendarData = previewData,
+            monthlyAlcoholUnitLevels = createPreviewMonthlyAlcoholUnitLevels(previewData)
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+@Preview(
+    name = "Compact phone",
+    showBackground = true,
+    showSystemUi = true,
+    widthDp = 360,
+    heightDp = 740,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+fun CalendarScreenPreviewCompactPhoneDarkTheme() {
+    DrinkWiseTheme(darkTheme = true) {
+        val previewData = createPreviewCalendarData()
+        CalendarScreenContent(
+            calendarData = previewData,
+            monthlyAlcoholUnitLevels = createPreviewMonthlyAlcoholUnitLevels(previewData)
+        )
     }
 }
 
@@ -375,4 +510,15 @@ private fun createPreviewCalendarData(): Map<YearMonth, List<CalendarDayData>> {
     }
 
     return result.toSortedMap(compareByDescending { it })
+}
+
+private fun createPreviewMonthlyAlcoholUnitLevels(
+    calendarData: Map<YearMonth, List<CalendarDayData>>
+): Map<YearMonth, AlcoholUnitLevel> {
+    return calendarData.mapValues { (_, days) ->
+        val unitCount = days.sumOf { day ->
+            day.alcoholUnitLevel?.unitCount?.toDouble() ?: 0.0
+        }.toFloat()
+        AlcoholUnitLevel.fromUnitCount(unitCount = unitCount, limit = 30f)
+    }.toSortedMap(compareByDescending { it })
 }
