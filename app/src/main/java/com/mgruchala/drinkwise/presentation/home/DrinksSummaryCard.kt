@@ -35,7 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mgruchala.drinkwise.R
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
-import com.mgruchala.drinkwise.presentation.common.AlcoholUnitLevelProgressIndicator
+import com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRing
 import com.mgruchala.user_preferences.summary_period.CalculationMode
 
 enum class DrinkSummaryCardPeriod {
@@ -95,7 +95,7 @@ fun DrinksSummaryCard(
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
-                AlcoholUnitLevelProgressIndicator(
+                AlcoholUnitProgressRing(
                     modifier = Modifier.size(54.dp),
                     alcoholUnitLevel = alcoholUnitLevel,
                 )
