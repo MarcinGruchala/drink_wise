@@ -17,7 +17,6 @@ Drink Wise is an Android app for tracking alcohol consumption, reviewing drinkin
 - `alcohol-database` - Room database, DAO, entities, and persistence wiring for drink records.
 - `user-preferences` - DataStore-backed settings for alcohol limits and summary period preferences.
 - `maestro/flows` - Maestro UI verification flows for core app screens.
-- `docs/features` - Feature notes and implementation records.
 
 ## Tech Stack
 
@@ -55,14 +54,6 @@ Run a Maestro flow on a connected emulator or device:
 ```sh
 scripts/android-maestro-run.sh maestro/flows/home-smoke.yaml
 ```
-
-## Development Notes
-
-- The app package is `com.mgruchala.drinkwise`.
-- The debug build adds the `.dev` application ID suffix and `-dev` version name suffix.
-- Release builds are minified and require local signing configuration in `keystore.properties`.
-- User-visible UI text lives in `app/src/main/res/values/strings.xml`.
-- Time-dependent logic should use the injected `Clock` abstraction.
 
 ## License
 
