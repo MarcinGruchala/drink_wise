@@ -91,7 +91,11 @@ fun DrinksSummaryCard(
                     )
                     Spacer(modifier = Modifier.size(4.dp))
                     Text(
-                        "${alcoholUnitLevel.unitCount} / ${alcoholUnitLevel.limit}",
+                        stringResource(
+                            id = R.string.drinks_summary_card_units_of_limit,
+                            alcoholUnitLevel.formattedUnitCount(),
+                            alcoholUnitLevel.formattedLimit()
+                        ),
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
