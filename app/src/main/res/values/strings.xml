@@ -11,6 +11,7 @@
     <string name="drinks_summary_card_today">Today</string>
     <string name="drinks_summary_card_this_week">This Week</string>
     <string name="drinks_summary_card_this_month">This Month</string>
+    <string name="drinks_summary_card_units_of_limit">%1$s / %2$s</string>
     <string name="drinks_summary_card_collapse_icon_content_description">Collapse details</string>
     <string name="drinks_summary_card_expand_icon_content_description">Expand details</string>
     <string name="drinks_summary_card_daily_option_since_midnight">Since 00:00</string>
