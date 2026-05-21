@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.mgruchala.drinkwise.R
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.common.AlcoholUnitProgressRing
+import com.mgruchala.drinkwise.presentation.common.formatAlcoholUnits
 import com.mgruchala.user_preferences.summary_period.CalculationMode
 
 enum class DrinkSummaryCardPeriod {
@@ -93,8 +94,8 @@ fun DrinksSummaryCard(
                     Text(
                         stringResource(
                             id = R.string.drinks_summary_card_units_of_limit,
-                            alcoholUnitLevel.formattedUnitCount(),
-                            alcoholUnitLevel.formattedLimit()
+                            alcoholUnitLevel.unitCount.formatAlcoholUnits(),
+                            alcoholUnitLevel.limit.formatAlcoholUnits()
                         ),
                         style = MaterialTheme.typography.titleLarge
                     )
