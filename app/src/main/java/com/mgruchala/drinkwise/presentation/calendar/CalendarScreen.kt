@@ -61,7 +61,8 @@ import java.time.format.FormatStyle
 import java.util.Locale
 
 private val MonthConsumptionIndicatorSize = 184.dp
-private val MonthConsumptionIndicatorTopGap = 48.dp
+private val MonthConsumptionIndicatorTopGap = 24.dp
+private val MonthConsumptionIndicatorBottomGap = 32.dp
 private val MonthConsumptionIndicatorStrokeWidth = 10.dp
 
 @Composable
@@ -124,10 +125,6 @@ fun CalendarScreenContent(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            DayOfWeekHeader()
-            Spacer(modifier = Modifier.height(8.dp))
-
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
@@ -135,12 +132,6 @@ fun CalendarScreenContent(
                 val month = sortedMonths[page]
                 val days = calendarData[month] ?: emptyList()
                 Column(modifier = Modifier.fillMaxSize()) {
-                    MonthCalendar(
-                        month = month,
-                        originalDays = days,
-                        onDayClick = onDayClick
-                    )
-
                     monthlyAlcoholUnitLevels[month]?.let { monthAlcoholUnitLevel ->
                         Spacer(modifier = Modifier.height(MonthConsumptionIndicatorTopGap))
                         Box(
@@ -149,7 +140,17 @@ fun CalendarScreenContent(
                         ) {
                             MonthConsumptionIndicator(alcoholUnitLevel = monthAlcoholUnitLevel)
                         }
+                        Spacer(modifier = Modifier.height(MonthConsumptionIndicatorBottomGap))
                     }
+
+                    DayOfWeekHeader()
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    MonthCalendar(
+                        month = month,
+                        originalDays = days,
+                        onDayClick = onDayClick
+                    )
                 }
             }
         }
