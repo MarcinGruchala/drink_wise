@@ -93,6 +93,29 @@ class CalendarViewModelTest {
         stateCollection.cancel()
     }
 
+    @Test
+    fun `state exposes today from injected clock`() = runTest(testDispatcher) {
+        val repository = FakeDrinksRepository()
+        val preferencesDataSource = FakeAlcoholLimitPreferencesDataSource(
+            preferences = AlcoholLimitPreferences(
+                dailyAlcoholUnitLimit = 4f,
+                weeklyAlcoholUnitLimit = 14f,
+                monthlyAlcoholUnitLimit = 10f
+            )
+        )
+        val viewModel = CalendarViewModel(
+            drinksRepository = repository,
+            alcoholLimitPreferencesRepository = preferencesDataSource,
+            clock = FakeClock(timestampFor(today, LocalTime.NOON))
+        )
+        val stateCollection = backgroundScope.launch { viewModel.state.collect { } }
+
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(today, viewModel.state.value.today)
+        stateCollection.cancel()
+    }
+
     private fun timestampFor(date: LocalDate, time: LocalTime): Long {
         return date.atTime(time)
             .atZone(zoneId)

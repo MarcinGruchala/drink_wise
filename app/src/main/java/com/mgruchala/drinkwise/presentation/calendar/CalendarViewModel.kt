@@ -22,6 +22,7 @@ import javax.inject.Inject
 data class CalendarScreenState(
     val calendarData: Map<YearMonth, List<CalendarDayData>> = emptyMap(),
     val monthlyAlcoholUnitLevels: Map<YearMonth, AlcoholUnitLevel> = emptyMap(),
+    val today: LocalDate = LocalDate.MIN,
     val isLoading: Boolean = true
 )
 
@@ -42,14 +43,17 @@ class CalendarViewModel @Inject constructor(
 
     val state: StateFlow<CalendarScreenState> =
         combine(drinksFlow, userPreferencesFlow) { drinks, userPreferences ->
+            val today = currentLocalDate()
             val processedData = processCalendarData(
                 drinks = drinks,
+                today = today,
                 dailyAlcoholLimit = userPreferences.dailyAlcoholUnitLimit.coerceAtLeast(0.1f),
                 monthlyAlcoholLimit = userPreferences.monthlyAlcoholUnitLimit.coerceAtLeast(0.1f)
             )
             CalendarScreenState(
                 calendarData = processedData.calendarData,
                 monthlyAlcoholUnitLevels = processedData.monthlyAlcoholUnitLevels,
+                today = today,
                 isLoading = false
             )
         }.stateIn(
@@ -60,6 +64,7 @@ class CalendarViewModel @Inject constructor(
 
     private fun processCalendarData(
         drinks: List<DrinkEntity>,
+        today: LocalDate,
         dailyAlcoholLimit: Float,
         monthlyAlcoholLimit: Float
     ): CalendarProcessedData {
@@ -67,7 +72,6 @@ class CalendarViewModel @Inject constructor(
             timestampToLocalDate(it.timestamp)
         }
 
-        val today = currentLocalDate()
         val startDate = if (drinks.isEmpty()) {
             today.minusMonths(1).withDayOfMonth(1)
         } else {

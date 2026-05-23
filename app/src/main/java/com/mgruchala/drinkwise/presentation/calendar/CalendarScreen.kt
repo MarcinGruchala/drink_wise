@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -64,6 +66,7 @@ private val MonthConsumptionIndicatorSize = 184.dp
 private val MonthConsumptionIndicatorTopGap = 24.dp
 private val MonthConsumptionIndicatorBottomGap = 32.dp
 private val MonthConsumptionIndicatorStrokeWidth = 10.dp
+private val PreviewToday: LocalDate = LocalDate.of(2026, 5, 21)
 
 @Composable
 fun CalendarScreen(
@@ -80,6 +83,7 @@ fun CalendarScreen(
         CalendarScreenContent(
             calendarData = state.calendarData,
             monthlyAlcoholUnitLevels = state.monthlyAlcoholUnitLevels,
+            today = state.today,
             onDayClick = onDayClick
         )
     }
@@ -89,6 +93,7 @@ fun CalendarScreen(
 fun CalendarScreenContent(
     calendarData: Map<YearMonth, List<CalendarDayData>>,
     monthlyAlcoholUnitLevels: Map<YearMonth, AlcoholUnitLevel> = emptyMap(),
+    today: LocalDate,
     onDayClick: (LocalDate) -> Unit = {}
 ) {
     val sortedMonths = calendarData.keys.sortedDescending()
@@ -131,7 +136,11 @@ fun CalendarScreenContent(
             ) { page ->
                 val month = sortedMonths[page]
                 val days = calendarData[month] ?: emptyList()
-                Column(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
                     monthlyAlcoholUnitLevels[month]?.let { monthAlcoholUnitLevel ->
                         Spacer(modifier = Modifier.height(MonthConsumptionIndicatorTopGap))
                         Box(
@@ -149,6 +158,7 @@ fun CalendarScreenContent(
                     MonthCalendar(
                         month = month,
                         originalDays = days,
+                        today = today,
                         onDayClick = onDayClick
                     )
                 }
@@ -207,6 +217,7 @@ fun MonthNavigationHeader(
 fun MonthCalendar(
     month: YearMonth,
     originalDays: List<CalendarDayData>,
+    today: LocalDate,
     onDayClick: (LocalDate) -> Unit = {}
 ) {
     val daysMap = originalDays.associateBy { it.date.dayOfMonth }
@@ -231,6 +242,7 @@ fun MonthCalendar(
         allCells.chunked(7).forEach { weekCells ->
             WeekRow(
                 weekDays = weekCells,
+                today = today,
                 onDayClick = onDayClick
             )
         }
@@ -268,6 +280,7 @@ fun DayOfWeekHeader() {
 @Composable
 fun WeekRow(
     weekDays: List<CalendarDayData?>,
+    today: LocalDate,
     onDayClick: (LocalDate) -> Unit = {}
 ) {
     Row(
@@ -280,6 +293,7 @@ fun WeekRow(
                 if (dayData != null) {
                     DayCell(
                         dayData = dayData,
+                        today = today,
                         onClick = { onDayClick(dayData.date) }
                     )
                 } else {
@@ -339,7 +353,7 @@ fun MonthConsumptionIndicator(
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "$percent%",
+                text = stringResource(R.string.calendar_month_consumption_percent, percent),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -388,9 +402,10 @@ fun EmptyDayPlaceholder() {
 @Composable
 fun DayCell(
     dayData: CalendarDayData,
+    today: LocalDate,
     onClick: () -> Unit = {}
 ) {
-    val isToday = dayData.date.isEqual(LocalDate.now())
+    val isToday = dayData.date.isEqual(today)
     val dayDescriptionFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
     val dayContentDescription = stringResource(
         id = R.string.calendar_day_content_description,
@@ -454,7 +469,8 @@ fun CalendarScreenPreviewLightTheme() {
         val previewData = createPreviewCalendarData()
         CalendarScreenContent(
             calendarData = previewData,
-            monthlyAlcoholUnitLevels = createPreviewMonthlyAlcoholUnitLevels(previewData)
+            monthlyAlcoholUnitLevels = createPreviewMonthlyAlcoholUnitLevels(previewData),
+            today = PreviewToday
         )
     }
 }
@@ -472,7 +488,8 @@ fun CalendarScreenPreviewDarkTheme() {
         val previewData = createPreviewCalendarData()
         CalendarScreenContent(
             calendarData = previewData,
-            monthlyAlcoholUnitLevels = createPreviewMonthlyAlcoholUnitLevels(previewData)
+            monthlyAlcoholUnitLevels = createPreviewMonthlyAlcoholUnitLevels(previewData),
+            today = PreviewToday
         )
     }
 }
@@ -492,17 +509,17 @@ fun CalendarScreenPreviewCompactPhoneDarkTheme() {
         val previewData = createPreviewCalendarData()
         CalendarScreenContent(
             calendarData = previewData,
-            monthlyAlcoholUnitLevels = createPreviewMonthlyAlcoholUnitLevels(previewData)
+            monthlyAlcoholUnitLevels = createPreviewMonthlyAlcoholUnitLevels(previewData),
+            today = PreviewToday
         )
     }
 }
 
 private fun createPreviewCalendarData(): Map<YearMonth, List<CalendarDayData>> {
-    val now = LocalDate.now()
     val result = mutableMapOf<YearMonth, List<CalendarDayData>>()
 
     for (i in 4 downTo 0) {
-        val month = YearMonth.from(now).minusMonths(i.toLong())
+        val month = YearMonth.from(PreviewToday).minusMonths(i.toLong())
         val days = (1..month.lengthOfMonth()).map { day ->
             val date = month.atDay(day)
             CalendarDayData(date, AlcoholUnitLevel.fromUnitCount(1f, limit = 3f))
