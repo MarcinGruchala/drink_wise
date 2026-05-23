@@ -348,7 +348,8 @@ fun MonthConsumptionIndicator(
             alcoholUnitLevel = alcoholUnitLevel,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
             strokeWidth = MonthConsumptionIndicatorStrokeWidth,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            animateProgress = true
         )
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

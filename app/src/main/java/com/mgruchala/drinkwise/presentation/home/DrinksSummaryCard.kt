@@ -103,6 +103,7 @@ fun DrinksSummaryCard(
                 AlcoholUnitProgressRing(
                     modifier = Modifier.size(54.dp),
                     alcoholUnitLevel = alcoholUnitLevel,
+                    animateProgress = true
                 )
                 IconButton(
                     onClick = { expanded = !expanded },
