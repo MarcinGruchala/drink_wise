@@ -64,6 +64,14 @@ internal fun calculateAlcoholUnitIndicatorOverflowGapRadius(
     return strokeRadius + gapPadding
 }
 
+internal fun resolveAlcoholUnitIndicatorDrawRatio(
+    targetRatio: Float,
+    animatedRatio: Float,
+    animateProgress: Boolean
+): Float {
+    return if (animateProgress) animatedRatio else targetRatio
+}
+
 internal fun alcoholUnitLevelIndicatorColor(alcoholUnitLevel: AlcoholUnitLevel): Color {
     return when (alcoholUnitLevel) {
         is AlcoholUnitLevel.Low -> AlcoholUnitLevelLow

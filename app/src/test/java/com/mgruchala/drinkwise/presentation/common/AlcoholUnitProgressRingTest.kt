@@ -120,4 +120,26 @@ class AlcoholUnitProgressRingTest {
 
         assertEquals(1.5f, gapRadius, FLOAT_TOLERANCE)
     }
+
+    @Test
+    fun `draw ratio uses target ratio when progress animation is disabled`() {
+        val drawRatio = resolveAlcoholUnitIndicatorDrawRatio(
+            targetRatio = 1.38f,
+            animatedRatio = 0.25f,
+            animateProgress = false
+        )
+
+        assertEquals(1.38f, drawRatio, FLOAT_TOLERANCE)
+    }
+
+    @Test
+    fun `draw ratio uses animated ratio when progress animation is enabled`() {
+        val drawRatio = resolveAlcoholUnitIndicatorDrawRatio(
+            targetRatio = 1.38f,
+            animatedRatio = 0.25f,
+            animateProgress = true
+        )
+
+        assertEquals(0.25f, drawRatio, FLOAT_TOLERANCE)
+    }
 }
