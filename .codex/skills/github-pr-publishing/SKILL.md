@@ -17,7 +17,13 @@ the user says otherwise.
    artifacts: the GitHub connector can create/update pull requests for this
    repo, or `gh auth status` succeeds. If the connector returns a permission
    error, immediately fall back to `gh`. If `gh` is not authenticated, start the
-   `gh auth login` flow and retry the PR operation after authentication.
+   `gh auth login` flow and retry the PR operation after authentication. If
+   sandboxed `gh auth status` reports a stale/invalid token but Git operations
+   over SSH work or the machine is known to have GitHub CLI configured, rerun
+   `gh auth status` outside the sandbox with `sandbox_permissions=require_escalated`;
+   macOS keychain-backed auth can be inaccessible inside the sandbox. If the
+   outside-sandbox check succeeds, run the needed `gh pr create` or `gh pr edit`
+   command outside the sandbox as well.
 2. Inspect `git status -sb` before staging. Keep unrelated local files out of
    the commit and use explicit paths when the worktree is mixed.
 3. Use Conventional Commits for new commit messages:
@@ -75,6 +81,10 @@ gh pr create --title "$title" --body-file "$body_file" --base main --draft  # ne
 gh pr edit <number> --title "$title" --body-file "$body_file"              # existing PR
 rm -f "$body_file"
 ```
+
+If `gh` only works outside the sandbox, keep the same temporary-file pattern and
+place the file in `/private/tmp` or another writable temp directory outside the
+repository. Do not leave PR body files in the checkout.
 
 ## Safety
 
