@@ -1,9 +1,14 @@
 package com.mgruchala.drinkwise.presentation.common
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -28,6 +33,8 @@ private const val StartAngleDegrees = -90f
 private const val MinimumAlcoholUnitIndicatorLimit = 0.1f
 private const val DayDetailsIndicatorDiameter = 220f
 private const val DayDetailsOverflowGapPadding = 4f
+private const val AlcoholUnitProgressRingAnimationDurationMillis = 800
+private val AlcoholUnitProgressRingAnimationEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
 
 // Extra clear radius as a fraction of indicator diameter; 4dp on the 220dp details ring.
 const val AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction =
@@ -86,11 +93,33 @@ internal fun AlcoholUnitProgressRing(
     modifier: Modifier = Modifier,
     trackColor: Color = MaterialTheme.colorScheme.inverseSurface,
     strokeWidth: Dp = 5.dp,
-    overflowGapPaddingFraction: Float = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction
+    overflowGapPaddingFraction: Float = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction,
+    animateProgress: Boolean = false
 ) {
-    val ratio = calculateAlcoholUnitIndicatorRatio(
+    val targetRatio = calculateAlcoholUnitIndicatorRatio(
         unitCount = alcoholUnitLevel.unitCount,
         limit = alcoholUnitLevel.limit
+    )
+    val animatedRatio = remember { Animatable(0f) }
+
+    LaunchedEffect(animateProgress, targetRatio) {
+        if (animateProgress) {
+            animatedRatio.animateTo(
+                targetValue = targetRatio,
+                animationSpec = tween(
+                    durationMillis = AlcoholUnitProgressRingAnimationDurationMillis,
+                    easing = AlcoholUnitProgressRingAnimationEasing
+                )
+            )
+        } else {
+            animatedRatio.snapTo(targetRatio)
+        }
+    }
+
+    val ratio = resolveAlcoholUnitIndicatorDrawRatio(
+        targetRatio = targetRatio,
+        animatedRatio = animatedRatio.value,
+        animateProgress = animateProgress
     )
     val levelColor = alcoholUnitLevelIndicatorColor(alcoholUnitLevel)
 
