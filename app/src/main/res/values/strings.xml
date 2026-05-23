@@ -57,6 +57,10 @@
     <string name="calendar_day_sat">Sat</string>
     <string name="calendar_day_sun">Sun</string>
     <string name="calendar_day_content_description">Open details for %1$s</string>
+    <string name="calendar_month_consumption_percent">%1$d%%</string>
+    <string name="calendar_month_consumed_of_limit">%1$s of %2$s</string>
+    <string name="calendar_month_consumption_indicator_description">%1$s of %2$s units, %3$s percent of monthly limit</string>
+    <string name="calendar_month_consumption_indicator_over_limit_description">%1$s of %2$s units, %3$s percent of monthly limit, over monthly limit by %4$s units</string>
     <!-- Day Details Screen -->
     <string name="day_details_title">Day details</string>
     <string name="day_details_navigate_back">Navigate back</string>
