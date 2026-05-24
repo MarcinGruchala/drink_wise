@@ -123,6 +123,24 @@ internal fun alcoholUnitLevelIndicatorColor(alcoholUnitLevel: AlcoholUnitLevel):
     }
 }
 
+/**
+ * Draws the shared alcohol unit progress ring.
+ *
+ * Progress animation is opt-in. When [animateProgress] is enabled, the ring animates the
+ * displayed ratio while text and semantics in parent components can continue showing the final
+ * value. A ratio of `1f` means the configured limit; values above `1f` move through the same
+ * over-limit renderer used by static rings, including the cleared overflow gap.
+ *
+ * On first composition, the animated ratio starts at zero and waits [animationStartDelayMillis]
+ * before drawing to the target. Later target changes start immediately from the current displayed
+ * ratio. The duration for each transition is:
+ *
+ * `animationDurationMillis + animationDurationPerRatioMillis * abs(targetRatio - currentRatio)`.
+ *
+ * Use [animationDurationMillis] as the minimum/base time, and
+ * [animationDurationPerRatioMillis] to slow down larger sweeps without making small changes feel
+ * sluggish. Negative timing values are clamped to zero.
+ */
 @Composable
 internal fun AlcoholUnitProgressRing(
     alcoholUnitLevel: AlcoholUnitLevel,
