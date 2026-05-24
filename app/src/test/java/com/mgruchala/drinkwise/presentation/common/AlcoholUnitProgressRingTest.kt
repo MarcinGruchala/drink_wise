@@ -146,10 +146,44 @@ class AlcoholUnitProgressRingTest {
     @Test
     fun `animation duration ignores negative values`() {
         val durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
-            animationDurationMillis = -300
+            animationDurationMillis = -300,
+            animationDurationPerRatioMillis = -300,
+            startRatio = 0f,
+            targetRatio = 1f
         )
 
         assertEquals(0, durationMillis)
+    }
+
+    @Test
+    fun `animation duration increases with animated ratio distance`() {
+        val shortDurationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+            animationDurationMillis = 650,
+            animationDurationPerRatioMillis = 700,
+            startRatio = 0f,
+            targetRatio = 0.3f
+        )
+        val longDurationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+            animationDurationMillis = 650,
+            animationDurationPerRatioMillis = 700,
+            startRatio = 0f,
+            targetRatio = 1.44f
+        )
+
+        assertEquals(860, shortDurationMillis)
+        assertEquals(1658, longDurationMillis)
+    }
+
+    @Test
+    fun `animation duration uses the distance from the current displayed ratio`() {
+        val durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+            animationDurationMillis = 650,
+            animationDurationPerRatioMillis = 700,
+            startRatio = 1.14f,
+            targetRatio = 1.44f
+        )
+
+        assertEquals(860, durationMillis)
     }
 
     @Test

@@ -63,7 +63,8 @@ For opted-in rings:
 - The displayed ratio animates to the target ratio.
 - When the target ratio changes while the composable remains mounted, the displayed ratio animates from the current animated value to the new target ratio.
 - The motion uses a Material-style emphasized decelerate easing: quick at the start, gentle at the end.
-- The duration should be long enough to read as intentional polish but short enough not to delay comprehension. A default duration around 1200ms is appropriate after visual review because the original 800ms draw-on was easy to miss.
+- The duration should be long enough to read as intentional polish but short enough not to delay comprehension. Duration scales with the animated ratio distance so a small 30% draw can finish faster while a 134-144% over-limit draw gets more time.
+- The default timing model combines a base duration with an additional per-ratio duration. Both values should be parameters on `AlcoholUnitProgressRing` so the pacing can stay local to the shared component.
 - The first draw-on animation may use a short start delay, around 300ms by default, so screen/navigation opening does not hide the beginning of the motion.
 - The start delay applies only to the first animation for that ring instance. Later target changes, such as Home summary period switches, should animate immediately from the current displayed ratio to the new target ratio.
 - Animation duration and initial start delay should be parameters on `AlcoholUnitProgressRing`, with defensive handling for negative values.
@@ -169,7 +170,7 @@ Mitigation: accept this as intentional. Text remains truthful and stable; the ri
 
 Risk: very short animations may look like a jump, while long animations may feel sluggish.
 
-Mitigation: use one shared calm draw-on duration and verify on real/emulated devices. Tune only if the first pass feels distracting or too slow.
+Mitigation: use shared distance-based timing with a minimum/base duration and a per-ratio duration, then verify on real/emulated devices. Tune the component defaults only if the pacing feels distracting or too slow.
 
 Risk: Compose animation APIs may trigger unnecessary recomposition.
 

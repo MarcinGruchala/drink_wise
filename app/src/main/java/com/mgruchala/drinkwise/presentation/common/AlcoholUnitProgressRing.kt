@@ -27,16 +27,19 @@ import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelAlarming
 import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelHigh
 import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelLow
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 private const val StartAngleDegrees = -90f
 private const val MinimumAlcoholUnitIndicatorLimit = 0.1f
 private const val DayDetailsIndicatorDiameter = 220f
 private const val DayDetailsOverflowGapPadding = 4f
-private const val AlcoholUnitProgressRingAnimationDurationMillis = 1_200
+private const val AlcoholUnitProgressRingAnimationDurationMillis = 650
+private const val AlcoholUnitProgressRingAnimationDurationPerRatioMillis = 700
 private const val AlcoholUnitProgressRingAnimationStartDelayMillis = 300
 private val AlcoholUnitProgressRingAnimationEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
 
@@ -84,9 +87,16 @@ internal fun resolveAlcoholUnitIndicatorDrawRatio(
 }
 
 internal fun calculateAlcoholUnitIndicatorAnimationDurationMillis(
-    animationDurationMillis: Int
+    animationDurationMillis: Int,
+    animationDurationPerRatioMillis: Int,
+    startRatio: Float,
+    targetRatio: Float
 ): Int {
-    return animationDurationMillis.coerceAtLeast(0)
+    val baseDurationMillis = animationDurationMillis.coerceAtLeast(0)
+    val durationPerRatioMillis = animationDurationPerRatioMillis.coerceAtLeast(0)
+    val ratioDistance = abs(targetRatio - startRatio)
+
+    return baseDurationMillis + (durationPerRatioMillis * ratioDistance).roundToInt()
 }
 
 internal fun calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
@@ -113,6 +123,7 @@ internal fun AlcoholUnitProgressRing(
     overflowGapPaddingFraction: Float = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction,
     animateProgress: Boolean = false,
     animationDurationMillis: Int = AlcoholUnitProgressRingAnimationDurationMillis,
+    animationDurationPerRatioMillis: Int = AlcoholUnitProgressRingAnimationDurationPerRatioMillis,
     animationStartDelayMillis: Int = AlcoholUnitProgressRingAnimationStartDelayMillis
 ) {
     val targetRatio = calculateAlcoholUnitIndicatorRatio(
@@ -126,6 +137,7 @@ internal fun AlcoholUnitProgressRing(
         animateProgress,
         targetRatio,
         animationDurationMillis,
+        animationDurationPerRatioMillis,
         animationStartDelayMillis
     ) {
         if (animateProgress) {
@@ -133,13 +145,17 @@ internal fun AlcoholUnitProgressRing(
                 animationStartDelayMillis = animationStartDelayMillis,
                 isInitialAnimation = isInitialAnimation
             )
+            val durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+                animationDurationMillis = animationDurationMillis,
+                animationDurationPerRatioMillis = animationDurationPerRatioMillis,
+                startRatio = animatedRatio.value,
+                targetRatio = targetRatio
+            )
             isInitialAnimation = false
             animatedRatio.animateTo(
                 targetValue = targetRatio,
                 animationSpec = tween(
-                    durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
-                        animationDurationMillis = animationDurationMillis
-                    ),
+                    durationMillis = durationMillis,
                     delayMillis = initialDelayMillis,
                     easing = AlcoholUnitProgressRingAnimationEasing
                 )
