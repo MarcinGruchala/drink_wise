@@ -120,4 +120,138 @@ class AlcoholUnitProgressRingTest {
 
         assertEquals(1.5f, gapRadius, FLOAT_TOLERANCE)
     }
+
+    @Test
+    fun `draw ratio uses target ratio when progress animation is disabled`() {
+        val drawRatio = resolveAlcoholUnitIndicatorDrawRatio(
+            targetRatio = 1.38f,
+            animatedRatio = 0.25f,
+            animateProgress = false
+        )
+
+        assertEquals(1.38f, drawRatio, FLOAT_TOLERANCE)
+    }
+
+    @Test
+    fun `draw ratio uses animated ratio when progress animation is enabled`() {
+        val drawRatio = resolveAlcoholUnitIndicatorDrawRatio(
+            targetRatio = 1.38f,
+            animatedRatio = 0.25f,
+            animateProgress = true
+        )
+
+        assertEquals(0.25f, drawRatio, FLOAT_TOLERANCE)
+    }
+
+    @Test
+    fun `initial animated ratio starts at zero when initial progress animation is enabled`() {
+        val initialRatio = resolveAlcoholUnitIndicatorInitialAnimatedRatio(
+            targetRatio = 1.38f,
+            animateProgress = true,
+            animateInitialProgress = true
+        )
+
+        assertEquals(0f, initialRatio, FLOAT_TOLERANCE)
+    }
+
+    @Test
+    fun `initial animated ratio starts at target when initial progress animation is disabled`() {
+        val initialRatio = resolveAlcoholUnitIndicatorInitialAnimatedRatio(
+            targetRatio = 1.38f,
+            animateProgress = true,
+            animateInitialProgress = false
+        )
+
+        assertEquals(1.38f, initialRatio, FLOAT_TOLERANCE)
+    }
+
+    @Test
+    fun `initial transition does not animate when initial progress animation is disabled`() {
+        val shouldAnimateTransition = shouldAnimateAlcoholUnitIndicatorTransition(
+            animateProgress = true,
+            animateInitialProgress = false,
+            isInitialAnimation = true
+        )
+
+        assertEquals(false, shouldAnimateTransition)
+    }
+
+    @Test
+    fun `later transition animates when initial progress animation is disabled`() {
+        val shouldAnimateTransition = shouldAnimateAlcoholUnitIndicatorTransition(
+            animateProgress = true,
+            animateInitialProgress = false,
+            isInitialAnimation = false
+        )
+
+        assertEquals(true, shouldAnimateTransition)
+    }
+
+    @Test
+    fun `animation duration ignores negative values`() {
+        val durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+            animationDurationMillis = -300,
+            animationDurationPerRatioMillis = -300,
+            startRatio = 0f,
+            targetRatio = 1f
+        )
+
+        assertEquals(0, durationMillis)
+    }
+
+    @Test
+    fun `animation duration increases with animated ratio distance`() {
+        val shortDurationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+            animationDurationMillis = 650,
+            animationDurationPerRatioMillis = 700,
+            startRatio = 0f,
+            targetRatio = 0.3f
+        )
+        val longDurationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+            animationDurationMillis = 650,
+            animationDurationPerRatioMillis = 700,
+            startRatio = 0f,
+            targetRatio = 1.44f
+        )
+
+        assertEquals(860, shortDurationMillis)
+        assertEquals(1658, longDurationMillis)
+    }
+
+    @Test
+    fun `animation duration uses the distance from the current displayed ratio`() {
+        val durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+            animationDurationMillis = 650,
+            animationDurationPerRatioMillis = 700,
+            startRatio = 1.14f,
+            targetRatio = 1.44f
+        )
+
+        assertEquals(860, durationMillis)
+    }
+
+    @Test
+    fun `initial animation delay ignores negative values`() {
+        val delayMillis = calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
+            animationStartDelayMillis = -300,
+            isInitialAnimation = true
+        )
+
+        assertEquals(0, delayMillis)
+    }
+
+    @Test
+    fun `initial animation delay is used only for the first animation`() {
+        val initialDelayMillis = calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
+            animationStartDelayMillis = 300,
+            isInitialAnimation = true
+        )
+        val laterDelayMillis = calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
+            animationStartDelayMillis = 300,
+            isInitialAnimation = false
+        )
+
+        assertEquals(300, initialDelayMillis)
+        assertEquals(0, laterDelayMillis)
+    }
 }
