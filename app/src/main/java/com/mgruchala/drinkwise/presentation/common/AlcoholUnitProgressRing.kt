@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -33,7 +36,8 @@ private const val StartAngleDegrees = -90f
 private const val MinimumAlcoholUnitIndicatorLimit = 0.1f
 private const val DayDetailsIndicatorDiameter = 220f
 private const val DayDetailsOverflowGapPadding = 4f
-private const val AlcoholUnitProgressRingAnimationDurationMillis = 800
+private const val AlcoholUnitProgressRingAnimationDurationMillis = 1_200
+private const val AlcoholUnitProgressRingAnimationStartDelayMillis = 300
 private val AlcoholUnitProgressRingAnimationEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
 
 // Extra clear radius as a fraction of indicator diameter; 4dp on the 220dp details ring.
@@ -79,6 +83,19 @@ internal fun resolveAlcoholUnitIndicatorDrawRatio(
     return if (animateProgress) animatedRatio else targetRatio
 }
 
+internal fun calculateAlcoholUnitIndicatorAnimationDurationMillis(
+    animationDurationMillis: Int
+): Int {
+    return animationDurationMillis.coerceAtLeast(0)
+}
+
+internal fun calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
+    animationStartDelayMillis: Int,
+    isInitialAnimation: Boolean
+): Int {
+    return if (isInitialAnimation) animationStartDelayMillis.coerceAtLeast(0) else 0
+}
+
 internal fun alcoholUnitLevelIndicatorColor(alcoholUnitLevel: AlcoholUnitLevel): Color {
     return when (alcoholUnitLevel) {
         is AlcoholUnitLevel.Low -> AlcoholUnitLevelLow
@@ -94,24 +111,41 @@ internal fun AlcoholUnitProgressRing(
     trackColor: Color = MaterialTheme.colorScheme.inverseSurface,
     strokeWidth: Dp = 5.dp,
     overflowGapPaddingFraction: Float = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction,
-    animateProgress: Boolean = false
+    animateProgress: Boolean = false,
+    animationDurationMillis: Int = AlcoholUnitProgressRingAnimationDurationMillis,
+    animationStartDelayMillis: Int = AlcoholUnitProgressRingAnimationStartDelayMillis
 ) {
     val targetRatio = calculateAlcoholUnitIndicatorRatio(
         unitCount = alcoholUnitLevel.unitCount,
         limit = alcoholUnitLevel.limit
     )
     val animatedRatio = remember { Animatable(0f) }
+    var isInitialAnimation by remember { mutableStateOf(true) }
 
-    LaunchedEffect(animateProgress, targetRatio) {
+    LaunchedEffect(
+        animateProgress,
+        targetRatio,
+        animationDurationMillis,
+        animationStartDelayMillis
+    ) {
         if (animateProgress) {
+            val initialDelayMillis = calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
+                animationStartDelayMillis = animationStartDelayMillis,
+                isInitialAnimation = isInitialAnimation
+            )
+            isInitialAnimation = false
             animatedRatio.animateTo(
                 targetValue = targetRatio,
                 animationSpec = tween(
-                    durationMillis = AlcoholUnitProgressRingAnimationDurationMillis,
+                    durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+                        animationDurationMillis = animationDurationMillis
+                    ),
+                    delayMillis = initialDelayMillis,
                     easing = AlcoholUnitProgressRingAnimationEasing
                 )
             )
         } else {
+            isInitialAnimation = false
             animatedRatio.snapTo(targetRatio)
         }
     }

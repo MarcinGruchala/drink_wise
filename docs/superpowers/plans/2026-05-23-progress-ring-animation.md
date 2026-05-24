@@ -8,6 +8,8 @@
 
 **Tech Stack:** Kotlin, Jetpack Compose Canvas, Compose animation core `Animatable`, Material 3 motion easing, JUnit 5, Gradle, Maestro for Android UI verification.
 
+**Follow-up adjustment:** After reviewing a screen recording, the animation timing was tuned inside `AlcoholUnitProgressRing`: the default duration is slower, the initial draw can start after a short configurable delay, and that delay applies only to the first animation for each ring instance.
+
 ---
 
 ## File Structure

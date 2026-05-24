@@ -142,4 +142,38 @@ class AlcoholUnitProgressRingTest {
 
         assertEquals(0.25f, drawRatio, FLOAT_TOLERANCE)
     }
+
+    @Test
+    fun `animation duration ignores negative values`() {
+        val durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
+            animationDurationMillis = -300
+        )
+
+        assertEquals(0, durationMillis)
+    }
+
+    @Test
+    fun `initial animation delay ignores negative values`() {
+        val delayMillis = calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
+            animationStartDelayMillis = -300,
+            isInitialAnimation = true
+        )
+
+        assertEquals(0, delayMillis)
+    }
+
+    @Test
+    fun `initial animation delay is used only for the first animation`() {
+        val initialDelayMillis = calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
+            animationStartDelayMillis = 300,
+            isInitialAnimation = true
+        )
+        val laterDelayMillis = calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
+            animationStartDelayMillis = 300,
+            isInitialAnimation = false
+        )
+
+        assertEquals(300, initialDelayMillis)
+        assertEquals(0, laterDelayMillis)
+    }
 }

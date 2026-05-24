@@ -47,7 +47,7 @@ Out of scope:
 
 Use an opt-in animation parameter on the shared ring component.
 
-`AlcoholUnitProgressRing` remains the single source of truth for ring drawing and overflow behavior. It should expose a parameter such as `animateProgress: Boolean = false`. Existing and future call sites remain static by default unless they explicitly opt in.
+`AlcoholUnitProgressRing` remains the single source of truth for ring drawing and overflow behavior. It should expose a parameter such as `animateProgress: Boolean = false`. Existing and future call sites remain static by default unless they explicitly opt in. The same composable should also expose timing parameters for the draw-on animation so callers can tune duration and the initial start delay without owning animation state.
 
 When `animateProgress` is `false`, the component should behave as it does today: calculate the target ratio from `AlcoholUnitLevel` and draw it immediately.
 
@@ -63,7 +63,10 @@ For opted-in rings:
 - The displayed ratio animates to the target ratio.
 - When the target ratio changes while the composable remains mounted, the displayed ratio animates from the current animated value to the new target ratio.
 - The motion uses a Material-style emphasized decelerate easing: quick at the start, gentle at the end.
-- The duration should be long enough to read as intentional polish but short enough not to delay comprehension. A duration in the 700-900ms range is appropriate for the initial draw-on. The implementation plan may choose one fixed duration, or a small shared constant, as long as all opted-in rings use the same feel.
+- The duration should be long enough to read as intentional polish but short enough not to delay comprehension. A default duration around 1200ms is appropriate after visual review because the original 800ms draw-on was easy to miss.
+- The first draw-on animation may use a short start delay, around 300ms by default, so screen/navigation opening does not hide the beginning of the motion.
+- The start delay applies only to the first animation for that ring instance. Later target changes, such as Home summary period switches, should animate immediately from the current displayed ratio to the new target ratio.
+- Animation duration and initial start delay should be parameters on `AlcoholUnitProgressRing`, with defensive handling for negative values.
 - There is no extra pulse, bounce, overshoot, scale, shimmer, or celebratory effect.
 
 The animation should tolerate all valid ratios:
