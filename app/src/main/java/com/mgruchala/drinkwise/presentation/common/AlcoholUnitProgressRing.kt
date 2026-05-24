@@ -47,9 +47,9 @@ private const val StartAngleDegrees = -90f
 private const val MinimumAlcoholUnitIndicatorLimit = 0.1f
 private const val DayDetailsIndicatorDiameter = 220f
 private const val DayDetailsOverflowGapPadding = 4f
-private const val AlcoholUnitProgressRingAnimationDurationMillis = 650
-private const val AlcoholUnitProgressRingAnimationDurationPerRatioMillis = 700
-private const val AlcoholUnitProgressRingAnimationStartDelayMillis = 300
+private const val AlcoholUnitProgressRingAnimationDurationMillis = 700
+private const val AlcoholUnitProgressRingAnimationDurationPerRatioMillis = 800
+private const val AlcoholUnitProgressRingAnimationStartDelayMillis = 350
 private val AlcoholUnitProgressRingAnimationEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
 
 // Extra clear radius as a fraction of indicator diameter; 4dp on the 220dp details ring.
