@@ -8,7 +8,7 @@
 
 **Tech Stack:** Kotlin, Jetpack Compose Canvas, Compose animation core `Animatable`, Material 3 motion easing, JUnit 5, Gradle, Maestro for Android UI verification.
 
-**Follow-up adjustment:** After reviewing a screen recording, the animation timing was tuned inside `AlcoholUnitProgressRing`: the initial draw can start after a short configurable delay, that delay applies only to the first animation for each ring instance, and duration now scales with the animated ratio distance so large over-limit sweeps move more calmly than small changes.
+**Follow-up adjustment:** After reviewing a screen recording, the animation timing was tuned inside `AlcoholUnitProgressRing`: the initial draw can start after a short configurable delay, that delay applies only to the first animation for each ring instance, duration now scales with the animated ratio distance, and Home/Calendar initial draw-on animation is limited to the first app-session entry while later Home period toggles still animate.
 
 ---
 

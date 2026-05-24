@@ -144,6 +144,50 @@ class AlcoholUnitProgressRingTest {
     }
 
     @Test
+    fun `initial animated ratio starts at zero when initial progress animation is enabled`() {
+        val initialRatio = resolveAlcoholUnitIndicatorInitialAnimatedRatio(
+            targetRatio = 1.38f,
+            animateProgress = true,
+            animateInitialProgress = true
+        )
+
+        assertEquals(0f, initialRatio, FLOAT_TOLERANCE)
+    }
+
+    @Test
+    fun `initial animated ratio starts at target when initial progress animation is disabled`() {
+        val initialRatio = resolveAlcoholUnitIndicatorInitialAnimatedRatio(
+            targetRatio = 1.38f,
+            animateProgress = true,
+            animateInitialProgress = false
+        )
+
+        assertEquals(1.38f, initialRatio, FLOAT_TOLERANCE)
+    }
+
+    @Test
+    fun `initial transition does not animate when initial progress animation is disabled`() {
+        val shouldAnimateTransition = shouldAnimateAlcoholUnitIndicatorTransition(
+            animateProgress = true,
+            animateInitialProgress = false,
+            isInitialAnimation = true
+        )
+
+        assertEquals(false, shouldAnimateTransition)
+    }
+
+    @Test
+    fun `later transition animates when initial progress animation is disabled`() {
+        val shouldAnimateTransition = shouldAnimateAlcoholUnitIndicatorTransition(
+            animateProgress = true,
+            animateInitialProgress = false,
+            isInitialAnimation = false
+        )
+
+        assertEquals(true, shouldAnimateTransition)
+    }
+
+    @Test
     fun `animation duration ignores negative values`() {
         val durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
             animationDurationMillis = -300,

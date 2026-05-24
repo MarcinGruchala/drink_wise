@@ -47,7 +47,7 @@ private const val StartAngleDegrees = -90f
 private const val MinimumAlcoholUnitIndicatorLimit = 0.1f
 private const val DayDetailsIndicatorDiameter = 220f
 private const val DayDetailsOverflowGapPadding = 4f
-private const val AlcoholUnitProgressRingAnimationDurationMillis = 700
+private const val AlcoholUnitProgressRingAnimationDurationMillis = 800
 private const val AlcoholUnitProgressRingAnimationDurationPerRatioMillis = 800
 private const val AlcoholUnitProgressRingAnimationStartDelayMillis = 350
 private val AlcoholUnitProgressRingAnimationEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
@@ -95,6 +95,22 @@ internal fun resolveAlcoholUnitIndicatorDrawRatio(
     return if (animateProgress) animatedRatio else targetRatio
 }
 
+internal fun resolveAlcoholUnitIndicatorInitialAnimatedRatio(
+    targetRatio: Float,
+    animateProgress: Boolean,
+    animateInitialProgress: Boolean
+): Float {
+    return if (animateProgress && animateInitialProgress) 0f else targetRatio
+}
+
+internal fun shouldAnimateAlcoholUnitIndicatorTransition(
+    animateProgress: Boolean,
+    animateInitialProgress: Boolean,
+    isInitialAnimation: Boolean
+): Boolean {
+    return animateProgress && (!isInitialAnimation || animateInitialProgress)
+}
+
 internal fun calculateAlcoholUnitIndicatorAnimationDurationMillis(
     animationDurationMillis: Int,
     animationDurationPerRatioMillis: Int,
@@ -126,14 +142,15 @@ internal fun alcoholUnitLevelIndicatorColor(alcoholUnitLevel: AlcoholUnitLevel):
 /**
  * Draws the shared alcohol unit progress ring.
  *
- * Progress animation is opt-in. When [animateProgress] is enabled, the ring animates the
- * displayed ratio while text and semantics in parent components can continue showing the final
- * value. A ratio of `1f` means the configured limit; values above `1f` move through the same
- * over-limit renderer used by static rings, including the cleared overflow gap.
+ * Progress animation is opt-in. When [animateProgress] is enabled, later target changes animate
+ * from the current displayed ratio while text and semantics in parent components can continue
+ * showing the final value. A ratio of `1f` means the configured limit; values above `1f` move
+ * through the same over-limit renderer used by static rings, including the cleared overflow gap.
  *
- * On first composition, the animated ratio starts at zero and waits [animationStartDelayMillis]
- * before drawing to the target. Later target changes start immediately from the current displayed
- * ratio. The duration for each transition is:
+ * When [animateInitialProgress] is enabled, first composition starts at zero and waits
+ * [animationStartDelayMillis] before drawing to the target. When it is disabled, first composition
+ * snaps to the target, but later target changes still animate if [animateProgress] is enabled.
+ * The duration for each animated transition is:
  *
  * `animationDurationMillis + animationDurationPerRatioMillis * abs(targetRatio - currentRatio)`.
  *
@@ -149,6 +166,7 @@ internal fun AlcoholUnitProgressRing(
     strokeWidth: Dp = 5.dp,
     overflowGapPaddingFraction: Float = AlcoholUnitIndicatorDefaultOverflowGapPaddingFraction,
     animateProgress: Boolean = false,
+    animateInitialProgress: Boolean = animateProgress,
     animationDurationMillis: Int = AlcoholUnitProgressRingAnimationDurationMillis,
     animationDurationPerRatioMillis: Int = AlcoholUnitProgressRingAnimationDurationPerRatioMillis,
     animationStartDelayMillis: Int = AlcoholUnitProgressRingAnimationStartDelayMillis
@@ -157,7 +175,15 @@ internal fun AlcoholUnitProgressRing(
         unitCount = alcoholUnitLevel.unitCount,
         limit = alcoholUnitLevel.limit
     )
-    val animatedRatio = remember { Animatable(0f) }
+    val animatedRatio = remember {
+        Animatable(
+            resolveAlcoholUnitIndicatorInitialAnimatedRatio(
+                targetRatio = targetRatio,
+                animateProgress = animateProgress,
+                animateInitialProgress = animateInitialProgress
+            )
+        )
+    }
     var isInitialAnimation by remember { mutableStateOf(true) }
 
     LaunchedEffect(
@@ -167,10 +193,18 @@ internal fun AlcoholUnitProgressRing(
         animationDurationPerRatioMillis,
         animationStartDelayMillis
     ) {
-        if (animateProgress) {
+        val wasInitialAnimation = isInitialAnimation
+        val shouldAnimateTransition = shouldAnimateAlcoholUnitIndicatorTransition(
+            animateProgress = animateProgress,
+            animateInitialProgress = animateInitialProgress,
+            isInitialAnimation = wasInitialAnimation
+        )
+        isInitialAnimation = false
+
+        if (shouldAnimateTransition) {
             val initialDelayMillis = calculateAlcoholUnitIndicatorInitialAnimationDelayMillis(
                 animationStartDelayMillis = animationStartDelayMillis,
-                isInitialAnimation = isInitialAnimation
+                isInitialAnimation = wasInitialAnimation && animateInitialProgress
             )
             val durationMillis = calculateAlcoholUnitIndicatorAnimationDurationMillis(
                 animationDurationMillis = animationDurationMillis,
@@ -188,7 +222,6 @@ internal fun AlcoholUnitProgressRing(
                 )
             )
         } else {
-            isInitialAnimation = false
             animatedRatio.snapTo(targetRatio)
         }
     }

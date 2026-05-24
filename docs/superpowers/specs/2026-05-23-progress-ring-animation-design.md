@@ -27,7 +27,7 @@ No ViewModel, repository, database, user-preference, or alcohol calculation chan
 In scope:
 
 - Add an opt-in animation API to `AlcoholUnitProgressRing`.
-- Animate the displayed ratio from zero to the target ratio on first composition for opted-in rings.
+- Animate the displayed ratio from zero to the target ratio on first composition for opted-in rings when that initial draw-on is enabled.
 - Animate the displayed ratio from its current displayed value to the next target ratio when the target changes.
 - Enable the animation on Home summary card rings, the Calendar month summary ring, and the Day Details large ring.
 - Preserve the current Canvas rendering details, including start angle, rounded arc caps, base lap behavior, overflow gap, overflow lap behavior, colors, stroke widths, and layout sizes.
@@ -59,15 +59,15 @@ The chosen motion feel is calm draw-on.
 
 For opted-in rings:
 
-- On first composition, the displayed ratio starts at `0f`.
-- The displayed ratio animates to the target ratio.
+- On first composition, the displayed ratio starts at `0f` when initial draw-on animation is enabled.
+- Initial draw-on animation can be disabled separately from later target-change animation; in that case first composition snaps to the target ratio.
 - When the target ratio changes while the composable remains mounted, the displayed ratio animates from the current animated value to the new target ratio.
 - The motion uses a Material-style emphasized decelerate easing: quick at the start, gentle at the end.
 - The duration should be long enough to read as intentional polish but short enough not to delay comprehension. Duration scales with the animated ratio distance so a small 30% draw can finish faster while a 134-144% over-limit draw gets more time.
 - The default timing model combines a base duration with an additional per-ratio duration. Both values should be parameters on `AlcoholUnitProgressRing` so the pacing can stay local to the shared component.
-- The first draw-on animation may use a short start delay, around 300ms by default, so screen/navigation opening does not hide the beginning of the motion.
+- The first draw-on animation may use a short start delay, so screen/navigation opening does not hide the beginning of the motion.
 - The start delay applies only to the first animation for that ring instance. Later target changes, such as Home summary period switches, should animate immediately from the current displayed ratio to the new target ratio.
-- Animation duration and initial start delay should be parameters on `AlcoholUnitProgressRing`, with defensive handling for negative values.
+- Animation duration, initial draw-on enablement, and initial start delay should be parameters on `AlcoholUnitProgressRing`, with defensive handling for negative timing values.
 - There is no extra pulse, bounce, overshoot, scale, shimmer, or celebratory effect.
 
 The animation should tolerate all valid ratios:
@@ -96,15 +96,16 @@ During animation into an over-limit target, it is acceptable and desired for the
 Home summary cards:
 
 - Today, This Week, and This Month rings opt in to animation.
-- First screen load animates each ring from zero to its current target.
+- First Home entry in an app session animates each ring from zero to its current target.
+- Later Home entries in the same app session snap directly to the current target to avoid repeated decorative motion.
 - Switching a card between start-of-period and rolling-period modes animates from the currently displayed ratio to the newly selected mode's ratio.
 - Card expansion/collapse behavior and segmented controls remain unchanged.
 
 Calendar month summary:
 
 - The large monthly summary ring opts in to animation.
-- Opening Calendar animates the visible month summary from zero to its target.
-- Moving between months may animate each newly composed month summary from zero to its month target. This is acceptable because monthly paging already introduces a larger context change.
+- First Calendar entry in an app session animates the visible month summary from zero to its target.
+- Later Calendar entries in the same app session snap directly to the current target.
 - Individual date rings remain static.
 
 Day Details:
