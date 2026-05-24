@@ -1,11 +1,17 @@
 package com.mgruchala.drinkwise.presentation.common
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,12 +27,15 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mgruchala.drinkwise.domain.AlcoholUnitLevel
 import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelAlarming
 import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelHigh
 import com.mgruchala.drinkwise.presentation.theme.AlcoholUnitLevelLow
+import com.mgruchala.drinkwise.presentation.theme.DrinkWiseTheme
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.floor
@@ -271,5 +280,63 @@ private fun DrawScope.drawAlcoholUnitProgress(
             size = Size(radius * 2f, radius * 2f),
             style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
+    }
+}
+
+@Preview(
+    name = "Light",
+    showBackground = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Composable
+fun AlcoholUnitProgressRingPreviewLightTheme() {
+    AlcoholUnitProgressRingPreview(darkTheme = false)
+}
+
+@Preview(
+    name = "Dark",
+    showBackground = true,
+    device = Devices.PIXEL_7_PRO,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun AlcoholUnitProgressRingPreviewDarkTheme() {
+    AlcoholUnitProgressRingPreview(darkTheme = true)
+}
+
+@Composable
+private fun AlcoholUnitProgressRingPreview(darkTheme: Boolean) {
+    DrinkWiseTheme(darkTheme = darkTheme) {
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground
+        ) {
+            Row(
+                modifier = Modifier.padding(24.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                AlcoholUnitProgressRing(
+                    alcoholUnitLevel = AlcoholUnitLevel.Low(1f, 4f),
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(72.dp)
+                )
+                AlcoholUnitProgressRing(
+                    alcoholUnitLevel = AlcoholUnitLevel.Alarming(3.2f, 4f),
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(72.dp)
+                )
+                AlcoholUnitProgressRing(
+                    alcoholUnitLevel = AlcoholUnitLevel.High(5.6f, 4f),
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(72.dp)
+                )
+                AlcoholUnitProgressRing(
+                    alcoholUnitLevel = AlcoholUnitLevel.High(14.8f, 4f),
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(72.dp)
+                )
+            }
+        }
     }
 }
