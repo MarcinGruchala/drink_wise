@@ -82,7 +82,9 @@ fun DayConsumptionIndicator(
             trackColor = trackColor,
             strokeWidth = IndicatorStrokeWidth,
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
+            animateProgress = true,
+            animationStartDelayMillis = 1000
         )
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

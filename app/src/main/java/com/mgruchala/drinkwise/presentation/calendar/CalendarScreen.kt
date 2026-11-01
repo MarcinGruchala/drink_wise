@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -71,7 +72,9 @@ private val PreviewToday: LocalDate = LocalDate.of(2026, 5, 21)
 @Composable
 fun CalendarScreen(
     onDayClick: (LocalDate) -> Unit = {},
-    viewModel: CalendarViewModel = hiltViewModel()
+    viewModel: CalendarViewModel = hiltViewModel(),
+    animateInitialProgress: Boolean = true,
+    onInitialProgressAnimationConsumed: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -84,6 +87,8 @@ fun CalendarScreen(
             calendarData = state.calendarData,
             monthlyAlcoholUnitLevels = state.monthlyAlcoholUnitLevels,
             today = state.today,
+            animateInitialProgress = animateInitialProgress,
+            onInitialProgressAnimationConsumed = onInitialProgressAnimationConsumed,
             onDayClick = onDayClick
         )
     }
@@ -94,12 +99,23 @@ fun CalendarScreenContent(
     calendarData: Map<YearMonth, List<CalendarDayData>>,
     monthlyAlcoholUnitLevels: Map<YearMonth, AlcoholUnitLevel> = emptyMap(),
     today: LocalDate,
-    onDayClick: (LocalDate) -> Unit = {}
+    onDayClick: (LocalDate) -> Unit = {},
+    animateInitialProgress: Boolean = true,
+    onInitialProgressAnimationConsumed: () -> Unit = {}
 ) {
     val sortedMonths = calendarData.keys.sortedDescending()
     val initialPage = 0
     val pagerState = rememberPagerState(initialPage = initialPage) { sortedMonths.size }
     val coroutineScope = rememberCoroutineScope()
+    val currentMonthHasSummary = sortedMonths
+        .firstOrNull()
+        ?.let { month -> monthlyAlcoholUnitLevels.containsKey(month) } == true
+
+    LaunchedEffect(animateInitialProgress, currentMonthHasSummary) {
+        if (animateInitialProgress && currentMonthHasSummary) {
+            onInitialProgressAnimationConsumed()
+        }
+    }
 
     Scaffold { innerPadding ->
         Column(
@@ -147,7 +163,10 @@ fun CalendarScreenContent(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.Center
                         ) {
-                            MonthConsumptionIndicator(alcoholUnitLevel = monthAlcoholUnitLevel)
+                            MonthConsumptionIndicator(
+                                alcoholUnitLevel = monthAlcoholUnitLevel,
+                                animateInitialProgress = animateInitialProgress
+                            )
                         }
                         Spacer(modifier = Modifier.height(MonthConsumptionIndicatorBottomGap))
                     }
@@ -307,7 +326,8 @@ fun WeekRow(
 @Composable
 fun MonthConsumptionIndicator(
     alcoholUnitLevel: AlcoholUnitLevel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    animateInitialProgress: Boolean = true
 ) {
     val consumed = alcoholUnitLevel.unitCount
     val limit = calculateAlcoholUnitIndicatorSafeLimit(alcoholUnitLevel.limit)
@@ -348,7 +368,9 @@ fun MonthConsumptionIndicator(
             alcoholUnitLevel = alcoholUnitLevel,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
             strokeWidth = MonthConsumptionIndicatorStrokeWidth,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            animateProgress = true,
+            animateInitialProgress = animateInitialProgress
         )
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

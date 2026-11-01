@@ -62,6 +62,7 @@ fun DrinksSummaryCard(
     forceExpanded: Boolean = false,
     currentMode: CalculationMode,
     onModeChange: (CalculationMode) -> Unit = {},
+    animateInitialProgress: Boolean = true
 ) {
     var expanded by rememberSaveable { mutableStateOf(forceExpanded) }
     Card(
@@ -103,6 +104,8 @@ fun DrinksSummaryCard(
                 AlcoholUnitProgressRing(
                     modifier = Modifier.size(54.dp),
                     alcoholUnitLevel = alcoholUnitLevel,
+                    animateProgress = true,
+                    animateInitialProgress = animateInitialProgress
                 )
                 IconButton(
                     onClick = { expanded = !expanded },

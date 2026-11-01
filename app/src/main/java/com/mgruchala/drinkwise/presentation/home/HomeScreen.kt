@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,11 +31,15 @@ import com.mgruchala.user_preferences.summary_period.CalculationMode
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeScreenViewModel = hiltViewModel()
+    viewModel: HomeScreenViewModel = hiltViewModel(),
+    animateInitialProgress: Boolean = true,
+    onInitialProgressAnimationConsumed: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     HomeScreenContent(
         state = state,
+        animateInitialProgress = animateInitialProgress,
+        onInitialProgressAnimationConsumed = onInitialProgressAnimationConsumed,
         registerNewDrinks = viewModel::registerNewDrinks,
         updateDailySummaryPeriod = viewModel::updateDailySummaryCalculationModePreferences,
         updateWeeklySummaryPeriod = viewModel::updateWeeklySummaryCalculationModePreferences,
@@ -49,8 +54,16 @@ fun HomeScreenContent(
     updateDailySummaryPeriod: (CalculationMode) -> Unit = {},
     updateMonthlySummaryPeriod: (CalculationMode) -> Unit = {},
     updateWeeklySummaryPeriod: (CalculationMode) -> Unit = {},
+    animateInitialProgress: Boolean = true,
+    onInitialProgressAnimationConsumed: () -> Unit = {}
 ) {
     val openAddDrinkDialog = rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(animateInitialProgress) {
+        if (animateInitialProgress) {
+            onInitialProgressAnimationConsumed()
+        }
+    }
 
     if (openAddDrinkDialog.value) {
         AddDrinkDialog(
@@ -89,6 +102,7 @@ fun HomeScreenContent(
                     period = DrinkSummaryCardPeriod.DAILY,
                     alcoholUnitLevel = state.todayAlcoholUnitLevel,
                     currentMode = state.dailySummaryCalculationMode,
+                    animateInitialProgress = animateInitialProgress,
                     onModeChange = { calculationMode ->
                         updateDailySummaryPeriod(calculationMode)
                     }
@@ -97,6 +111,7 @@ fun HomeScreenContent(
                     period = DrinkSummaryCardPeriod.WEEKLY,
                     alcoholUnitLevel = state.weekAlcoholUnitLevel,
                     currentMode = state.weeklySummaryCalculationMode,
+                    animateInitialProgress = animateInitialProgress,
                     onModeChange = { calculationMode ->
                         updateWeeklySummaryPeriod(calculationMode)
                     }
@@ -105,6 +120,7 @@ fun HomeScreenContent(
                     period = DrinkSummaryCardPeriod.MONTHLY,
                     alcoholUnitLevel = state.monthAlcoholUnitLevel,
                     currentMode = state.monthlySummaryCalculationMode,
+                    animateInitialProgress = animateInitialProgress,
                     onModeChange = { calculationMode ->
                         updateMonthlySummaryPeriod(calculationMode)
                     }

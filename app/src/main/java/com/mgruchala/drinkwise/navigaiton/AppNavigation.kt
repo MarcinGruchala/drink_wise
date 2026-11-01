@@ -10,6 +10,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -30,6 +33,8 @@ import com.mgruchala.drinkwise.presentation.settings.SettingsScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    var homeInitialProgressAnimationShown by rememberSaveable { mutableStateOf(false) }
+    var calendarInitialProgressAnimationShown by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -80,9 +85,20 @@ fun AppNavigation() {
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding)
         ) {
-            composable(AppRoute.Home.name) { HomeScreen() }
+            composable(AppRoute.Home.name) {
+                HomeScreen(
+                    animateInitialProgress = !homeInitialProgressAnimationShown,
+                    onInitialProgressAnimationConsumed = {
+                        homeInitialProgressAnimationShown = true
+                    }
+                )
+            }
             composable(AppRoute.Calendar.name) {
                 CalendarScreen(
+                    animateInitialProgress = !calendarInitialProgressAnimationShown,
+                    onInitialProgressAnimationConsumed = {
+                        calendarInitialProgressAnimationShown = true
+                    },
                     onDayClick = { date ->
                         navController.navigate(AppRoute.DayDetails.createRoute(date.toEpochDay()))
                     }
